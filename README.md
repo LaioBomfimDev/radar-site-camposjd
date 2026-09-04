@@ -1,4 +1,4 @@
-# Voe Radar — Campos do Jordão
+# Radar Viagem e Turismo — Campos do Jordão
 
 Landing page imersiva, mobile-first, construída em React + GSAP para apresentar três experiências em Campos do Jordão: Horto Florestal, Morro do Elefante e passeio de trem pela Serra da Mantiqueira.
 
@@ -16,6 +16,7 @@ Os blocos foram compostos a partir de padrões presentes no catálogo [21st.dev]
 ## Performance e acessibilidade
 
 - Imagens locais em WebP, redimensionadas e comprimidas.
+- Identidade oficial da Radar servida em derivados otimizados para navegação, hero, ticket, footer e favicon.
 - Vídeo WebM abaixo de 1 MB com poster e carregamento por interseção.
 - `loading="lazy"` e `decoding="async"` fora da primeira dobra.
 - Animações limitadas a transform e opacity sempre que possível.
