@@ -6,7 +6,6 @@ import {
   ChevronDown,
   CirclePause,
   CirclePlay,
-  Clock3,
   Leaf,
   MapPin,
   Mountain,
@@ -33,7 +32,7 @@ const destinations = [
     image: '/media/horto.webp',
     alt: 'Lago e mata de araucárias no Horto Florestal de Campos do Jordão',
     icon: Leaf,
-    duration: 'meio dia',
+    category: 'natureza e trilhas',
     accent: '#d7ff4f',
     description:
       'O caminho entra pela mata e o barulho fica para trás. Araucárias, trilhas e água correndo por perto — espaço para caminhar sem olhar as horas.',
@@ -57,14 +56,14 @@ const destinations = [
     image: '/media/morro.webp',
     alt: 'Teleférico subindo o Morro do Elefante em Campos do Jordão',
     icon: Mountain,
-    duration: '1–2 horas',
+    category: 'vista panorâmica',
     accent: '#ffb45e',
     description:
       'O teleférico deixa Capivari para trás. Os telhados diminuem, a paisagem se abre e Campos do Jordão muda diante dos olhos.',
     facts: [
       ['Aproveite a subida', 'Parte da melhor vista acontece no caminho.'],
       ['Fique mais um pouco', 'Explore o alto antes de pensar na descida.'],
-      ['Olhe longe', 'Com céu aberto, a Mantiqueira parece não terminar.'],
+      ['Olhe longe', 'Com céu aberto, a paisagem parece não terminar.'],
     ],
     cta: 'Quero ver a cidade do alto',
     memory: 'Você mudou o ponto de vista.',
@@ -75,22 +74,22 @@ const destinations = [
     number: '03',
     verb: 'Seguir',
     eyebrow: 'Terceira parada · Seguir',
-    title: 'Passeio\nsobre trilhos',
-    short: 'Passeio sobre trilhos',
+    title: 'Passeio\nde trem',
+    short: 'Passeio de trem',
     headline: 'Tem caminhos melhores quando demoram.',
     image: '/media/trem.webp',
     alt: 'Trem da Estrada de Ferro Campos do Jordão cruzando a serra',
     icon: TrainFront,
-    duration: '2 horas',
+    category: 'experiência ferroviária',
     accent: '#ffd857',
     description:
       'O trem acompanha a montanha e a paisagem muda sem pedir nada além de presença. Aqui, o caminho é o próprio passeio.',
     facts: [
-      ['Fique na janela', 'É dali que a Mantiqueira conta a história.'],
+      ['Fique na janela', 'É dali que a serra conta a história.'],
       ['Esqueça a pressa', 'O melhor acontece entre a partida e a chegada.'],
       ['Faça a foto. Depois olhe.', 'Algumas curvas ficam melhores só na memória.'],
     ],
-    cta: 'Quero seguir sobre trilhos',
+    cta: 'Quero fazer o passeio de trem',
     memory: 'Você deixou o caminho durar.',
     choice: 'A serra vista pelo caminho.',
   },
@@ -210,7 +209,7 @@ function AirplaneIntro({ reducedMotion }) {
         .fromTo('.flight-hero-copy', { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75 }, 1.15)
         .fromTo('.hero-word', { yPercent: 110 }, { yPercent: 0, stagger: 0.12, duration: 0.9, ease: 'power4.out' }, 1.1)
         .to('.wing', { xPercent: 7, yPercent: -6, rotate: -2, duration: 2 }, 0)
-        .to('.altitude-value', { innerText: 1628, snap: { innerText: 1 }, duration: 2 }, 0)
+        .to('.altitude-value', { innerText: 3, snap: { innerText: 1 }, duration: 2 }, 0)
     }, root)
     return () => ctx.revert()
   }, [reducedMotion])
@@ -250,7 +249,7 @@ function AirplaneIntro({ reducedMotion }) {
             </h1>
             <div className="hero-meta">
               <p>Suba a serra.<br /><strong>Deixe a pressa lá embaixo.</strong></p>
-              <div className="altimeter"><span>ALTITUDE</span><strong className="altitude-value">0</strong><small>m</small></div>
+              <div className="altimeter"><span>EXPERIÊNCIAS</span><strong className="altitude-value">0</strong><small>no roteiro</small></div>
             </div>
           </div>
         </div>
@@ -265,7 +264,7 @@ function AirplaneIntro({ reducedMotion }) {
         </div>
 
         <div className="boarding-copy">
-          <span className="boarding-chip"><span className="status-dot" /> PRÓXIMA PARADA · MANTIQUEIRA</span>
+          <span className="boarding-chip"><span className="status-dot" /> DESTINO DE HOJE · CAMPOS DO JORDÃO</span>
           <h2>Antes de chegar,<br /><em>olhe pela janela.</em></h2>
           <p>Role para abrir a serra.</p>
           <ArrowDown className="scroll-arrow" size={18} />
@@ -456,7 +455,7 @@ function DestinationStory({ item, index, reducedMotion }) {
 
         <TiltCard className="info-card">
           <div className="card-topline">
-            <span><Clock3 size={14} /> {item.duration}</span>
+            <span><Sparkles size={14} /> {item.category}</span>
             <span>RADAR INDICA · {item.number}</span>
           </div>
           <h3 className="card-headline">{item.headline}</h3>
@@ -607,31 +606,34 @@ function BoardingPass({ onOpen }) {
         <h2>Campos do Jordão<br /><em>já está no radar.</em></h2>
       </div>
       <div className="pass-perspective" onPointerMove={move} onPointerLeave={() => gsap.to(pass.current, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'elastic.out(1,.55)' })}>
-        <article className="boarding-pass" ref={pass}>
+        <article className="boarding-pass" ref={pass} aria-label="Guia de destino Radar para Campos do Jordão">
           <div className="pass-main">
-            <div className="pass-brand"><RadarLogo variant="wordmark" decorative /><small>CARTÃO DE VIAGEM</small></div>
+            <div className="pass-brand"><RadarLogo variant="wordmark" decorative /><small>GUIA DE DESTINO</small></div>
             <div className="pass-destination">
-              <div><small>DESTINO</small><strong>Campos do Jordão</strong><span>São Paulo</span></div>
-              <b>CJO</b>
+              <div><small>DESTINO</small><strong>Campos do Jordão</strong><span>São Paulo, Brasil</span></div>
+              <div className="pass-count"><strong>03</strong><span>experiências</span></div>
             </div>
             <div className="pass-radar-list">
-              <small>NO SEU RADAR</small>
-              {destinations.map((item) => <span key={item.id}><i>{item.number}</i>{item.short}</span>)}
+              <small>ROTEIRO DE EXPERIÊNCIAS</small>
+              {destinations.map((item) => <span key={item.id}><i>{item.number}</i><b>{item.short}</b></span>)}
             </div>
             <div className="pass-data">
-              <span><small>RITMO</small><b>SEM PRESSA</b></span>
-              <span><small>PARADAS</small><b>03</b></span>
-              <span><small>STATUS</small><b className="confirmed"><i /> NO RADAR</b></span>
+              <span><small>FORMATO</small><b>GUIA VISUAL</b></span>
+              <span><small>CONTEÚDO</small><b>3 EXPERIÊNCIAS</b></span>
+              <span><small>CURADORIA</small><b>RADAR</b></span>
             </div>
           </div>
           <div className="pass-stub">
-            <div className="barcode" aria-hidden="true" />
-            <strong>CJO</strong><span>22°44' S</span>
+            <Ticket size={24} aria-hidden="true" />
+            <div>
+              <small>ANTES DE IR</small>
+              <p>Confirme horários, funcionamento e ingressos nos canais oficiais.</p>
+            </div>
           </div>
         </article>
       </div>
       <button className="magnetic-cta" onClick={onOpen}>
-        <span>Montar meu roteiro</span><span className="cta-icon"><ArrowRight size={20} /></span>
+        <span>Personalizar este roteiro</span><span className="cta-icon"><ArrowRight size={20} /></span>
       </button>
       <a className="boarding-note" href="#roteiro"><ChevronDown size={15} /> Rever as três experiências</a>
     </section>
@@ -692,7 +694,7 @@ function PlannerModal({ open, onClose }) {
                 return (
                   <button key={item.id} className={checked ? 'selected' : ''} onClick={() => toggle(item.id)} aria-pressed={checked}>
                     <span className="planner-icon"><Icon size={18} /></span>
-                    <span><strong>{item.short}</strong><small>{item.choice}</small><em>{item.duration}</em></span>
+                    <span><strong>{item.short}</strong><small>{item.choice}</small><em>{item.category}</em></span>
                     <i>{checked && <Check size={15} />}</i>
                   </button>
                 )
