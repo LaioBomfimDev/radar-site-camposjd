@@ -8,6 +8,7 @@ import {
   CirclePlay,
   Leaf,
   MapPin,
+  MessageCircle,
   Mountain,
   Plane,
   Sparkles,
@@ -19,6 +20,14 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
+
+const WHATSAPP_PHONE = '5571996352670'
+const whatsappUrl = (message) =>
+  `https://api.whatsapp.com/send/?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0&utm_source=site-campos-do-jordao`
+
+const generalWhatsappUrl = whatsappUrl(
+  'Olá, Radar! Vi o roteiro de Campos do Jordão e quero saber mais sobre o destino, valores, hospedagens e como garantir minha viagem.',
+)
 
 const destinations = [
   {
@@ -478,7 +487,14 @@ function DestinationStory({ item, index, reducedMotion }) {
             <strong>{item.facts[activeFact][0]}</strong>
             <p>{item.facts[activeFact][1]}</p>
           </div>
-          <a className="chapter-cta" href="#embarque">{item.cta}<ArrowRight size={14} /></a>
+          <a
+            className="chapter-cta"
+            href={whatsappUrl(`Olá, Radar! Vi ${item.short} no roteiro de Campos do Jordão e quero saber mais sobre valores, hospedagem e como garantir minha viagem.`)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {item.cta}<ArrowRight size={14} />
+          </a>
           <span className="card-glow" />
         </TiltCard>
 
@@ -603,7 +619,15 @@ function BoardingPass({ onOpen }) {
       <div className="section-label light"><span>04</span> AGORA É COM VOCÊ</div>
       <div className="boarding-heading">
         <span>Escolha como viver a serra.</span>
-        <h2>Campos do Jordão<br /><em>já está no radar.</em></h2>
+        <div className="boarding-heading-copy">
+          <h2>Campos do Jordão<br /><em>já está no radar.</em></h2>
+          <p>
+            Os três passeios são só o começo. Existem muitos outros atrativos, passeios e experiências que fazem de Campos do Jordão um dos destinos mais charmosos do Brasil.
+          </p>
+          <p>
+            Quer saber mais sobre o destino, valores, hospedagens e como garantir sua viagem? <strong>Fale com a Radar.</strong>
+          </p>
+        </div>
       </div>
       <div className="pass-perspective" onPointerMove={move} onPointerLeave={() => gsap.to(pass.current, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'elastic.out(1,.55)' })}>
         <article className="boarding-pass" ref={pass} aria-label="Guia de destino Radar para Campos do Jordão">
@@ -632,9 +656,14 @@ function BoardingPass({ onOpen }) {
           </div>
         </article>
       </div>
-      <button className="magnetic-cta" onClick={onOpen}>
-        <span>Personalizar este roteiro</span><span className="cta-icon"><ArrowRight size={20} /></span>
-      </button>
+      <div className="boarding-actions">
+        <a className="magnetic-cta" href={generalWhatsappUrl} target="_blank" rel="noreferrer">
+          <span>Falar com a Radar no WhatsApp</span><span className="cta-icon"><MessageCircle size={20} /></span>
+        </a>
+        <button className="magnetic-cta route-builder" onClick={onOpen}>
+          <span>Personalizar este roteiro</span><span className="cta-icon"><ArrowRight size={20} /></span>
+        </button>
+      </div>
       <a className="boarding-note" href="#roteiro"><ChevronDown size={15} /> Rever as três experiências</a>
     </section>
   )
@@ -709,11 +738,82 @@ function PlannerModal({ open, onClose }) {
             <span>ROTA PRONTA</span>
             <h2>Campos do Jordão<br /><em>está no radar.</em></h2>
             <p>Você colocou {selected.length} {selected.length === 1 ? 'experiência' : 'experiências'} no seu radar para a próxima viagem.</p>
-            <button className="modal-submit" onClick={onClose}>Ver meu roteiro <ArrowRight size={18} /></button>
+            <a
+              className="modal-submit"
+              href={whatsappUrl(`Olá, Radar! Montei um roteiro para Campos do Jordão com ${selected.map((id) => destinations.find((item) => item.id === id)?.short).filter(Boolean).join(', ')}. Quero saber mais sobre valores, hospedagem e como garantir minha viagem.`)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Falar com a Radar <MessageCircle size={18} />
+            </a>
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+function WhatsAppFloat({ reducedMotion }) {
+  const [visible, setVisible] = useState(false)
+  const [cycle, setCycle] = useState(0)
+  const bubble = useRef(null)
+  const hideTimer = useRef(null)
+
+  useEffect(() => {
+    let interval
+
+    const showMessage = () => {
+      window.clearTimeout(hideTimer.current)
+      setVisible(true)
+      setCycle((current) => current + 1)
+      hideTimer.current = window.setTimeout(() => setVisible(false), 9000)
+    }
+
+    const initial = window.setTimeout(() => {
+      showMessage()
+      interval = window.setInterval(showMessage, 20000)
+    }, 3500)
+
+    return () => {
+      window.clearTimeout(initial)
+      window.clearTimeout(hideTimer.current)
+      window.clearInterval(interval)
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!visible || !bubble.current || reducedMotion) return
+    gsap.fromTo(
+      bubble.current,
+      { y: 12, opacity: 0, scale: 0.94 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.7)' },
+    )
+  }, [visible, cycle, reducedMotion])
+
+  const dismiss = () => {
+    window.clearTimeout(hideTimer.current)
+    if (!bubble.current || reducedMotion) {
+      setVisible(false)
+      return
+    }
+    gsap.to(bubble.current, { y: 8, opacity: 0, duration: 0.2, onComplete: () => setVisible(false) })
+  }
+
+  return (
+    <aside className="whatsapp-float" aria-label="Contato com a Radar pelo WhatsApp">
+      {visible && (
+        <div className="whatsapp-bubble" ref={bubble} role="status" aria-live="polite">
+          <button type="button" onClick={dismiss} aria-label="Fechar mensagem"><X size={13} /></button>
+          <span>RADAR VIAGEM E TURISMO</span>
+          <p>Entre em contato com nossa agência de turismo.</p>
+          <a href={generalWhatsappUrl} target="_blank" rel="noreferrer">Conversar agora <ArrowRight size={13} /></a>
+        </div>
+      )}
+      <a className="whatsapp-button" href={generalWhatsappUrl} target="_blank" rel="noreferrer" aria-label="Falar com a Radar pelo WhatsApp">
+        <MessageCircle size={27} fill="currentColor" />
+        <span>WhatsApp</span>
+      </a>
+    </aside>
   )
 }
 
@@ -810,6 +910,7 @@ function App() {
         <a href="#top">Voltar à serra <ArrowDown size={14} className="arrow-up" /></a>
       </footer>
       <PlannerModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <WhatsAppFloat reducedMotion={reducedMotion} />
     </>
   )
 }
