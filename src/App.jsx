@@ -18,8 +18,12 @@ import {
 } from 'lucide-react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+// Evita que o teclado virtual/barra de endereço do mobile dispare um
+// recálculo caro de todos os ScrollTriggers a cada resize.
+ScrollTrigger.config({ ignoreMobileResize: true })
 
 const WHATSAPP_PHONE = '5571996352670'
 const whatsappUrl = (message) =>
@@ -167,7 +171,7 @@ function Preloader({ onComplete }) {
   )
 }
 
-function FlightNav({ progress, soundOn, toggleSound }) {
+function FlightNav({ progressRef, soundOn, toggleSound }) {
   return (
     <header className="flight-nav" aria-label="Navegação principal">
       <a className="brand" href="#top" aria-label="Radar Viagem e Turismo — início">
@@ -181,7 +185,7 @@ function FlightNav({ progress, soundOn, toggleSound }) {
         </button>
         <a className="route-button" href="#roteiro">Ver roteiro <ArrowRight size={15} /></a>
       </div>
-      <div className="nav-progress" style={{ '--progress': progress }} />
+      <div className="nav-progress" ref={progressRef} />
     </header>
   )
 }
@@ -212,13 +216,13 @@ function AirplaneIntro({ reducedMotion }) {
         },
       })
       tl.to('.boarding-copy', { y: 45, opacity: 0, duration: 0.42, ease: 'power2.in' }, 0)
-        .to('.sky-window', { width: '100vw', height: '100svh', borderRadius: 0, duration: 2, ease: 'power2.inOut' }, 0)
-        .to('.cabin-shell', { opacity: 0, scale: 1.1, duration: 0.65 }, 0.75)
-        .to('.window-glint', { xPercent: 190, duration: 1.8 }, 0)
-        .fromTo('.flight-hero-copy', { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75 }, 1.15)
-        .fromTo('.hero-word', { yPercent: 110 }, { yPercent: 0, stagger: 0.12, duration: 0.9, ease: 'power4.out' }, 1.1)
-        .to('.wing', { xPercent: 7, yPercent: -6, rotate: -2, duration: 2 }, 0)
-        .to('.altitude-value', { innerText: 3, snap: { innerText: 1 }, duration: 2 }, 0)
+        .to('.sky-window', { width: '100vw', height: '100svh', borderRadius: 0, duration: 1.6, ease: 'none' }, 0)
+        .to('.cabin-shell', { opacity: 0, scale: 1.1, duration: 1.6, ease: 'none' }, 0)
+        .to('.window-glint', { xPercent: 190, duration: 1.6, ease: 'none' }, 0)
+        .fromTo('.flight-hero-copy', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out' }, 1.55)
+        .fromTo('.hero-word', { yPercent: 110 }, { yPercent: 0, stagger: 0.12, duration: 0.9, ease: 'power4.out' }, 1.5)
+        .to('.wing', { xPercent: 7, yPercent: -6, rotate: -2, duration: 1.6, ease: 'none' }, 0)
+        .to('.altitude-value', { innerText: 3, snap: { innerText: 1 }, duration: 1.6, ease: 'none' }, 0)
     }, root)
     return () => ctx.revert()
   }, [reducedMotion])
@@ -339,28 +343,57 @@ function RouteBriefing({ reducedMotion }) {
   )
 }
 
-function TiltCard({ children, className = '' }) {
+function TiltCard({ children, className = '', reducedMotion = false }) {
   const card = useRef(null)
+  const rect = useRef(null)
+  const quick = useRef(null)
 
-  const move = (event) => {
-    if (!card.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const rect = card.current.getBoundingClientRect()
-    const x = (event.clientX - rect.left) / rect.width - 0.5
-    const y = (event.clientY - rect.top) / rect.height - 0.5
-    gsap.to(card.current, {
-      rotateY: x * 9,
-      rotateX: y * -9,
-      transformPerspective: 900,
-      duration: 0.45,
-      ease: 'power2.out',
-      '--mx': `${(x + 0.5) * 100}%`,
-      '--my': `${(y + 0.5) * 100}%`,
-    })
+  useEffect(() => {
+    if (!card.current) return
+    gsap.set(card.current, { transformPerspective: 900 })
+    quick.current = {
+      rotateY: gsap.quickTo(card.current, 'rotateY', { duration: 0.45, ease: 'power2.out' }),
+      rotateX: gsap.quickTo(card.current, 'rotateX', { duration: 0.45, ease: 'power2.out' }),
+      // --mx/--my já começam em 50% no CSS, então o quickTo herda o unit '%'
+      // do valor computado inicial e os valores passados abaixo podem ser numéricos.
+      mx: gsap.quickTo(card.current, '--mx', { duration: 0.45, ease: 'power2.out' }),
+      my: gsap.quickTo(card.current, '--my', { duration: 0.45, ease: 'power2.out' }),
+    }
+  }, [])
+
+  // Lê o layout uma vez ao entrar, evitando reflow síncrono a cada pointermove.
+  const startTilt = () => {
+    if (reducedMotion || !card.current) return
+    rect.current = card.current.getBoundingClientRect()
   }
 
-  const reset = () => gsap.to(card.current, { rotateX: 0, rotateY: 0, duration: 0.7, ease: 'elastic.out(1, .55)' })
+  const move = (event) => {
+    if (reducedMotion || !rect.current || !quick.current) return
+    const x = (event.clientX - rect.current.left) / rect.current.width - 0.5
+    const y = (event.clientY - rect.current.top) / rect.current.height - 0.5
+    quick.current.rotateY(x * 9)
+    quick.current.rotateX(y * -9)
+    quick.current.mx((x + 0.5) * 100)
+    quick.current.my((y + 0.5) * 100)
+  }
 
-  return <div className={`tilt-card ${className}`} ref={card} onPointerMove={move} onPointerLeave={reset}>{children}</div>
+  const reset = () => {
+    rect.current = null
+    if (!card.current) return
+    gsap.to(card.current, { rotateX: 0, rotateY: 0, duration: 0.7, ease: 'elastic.out(1, .55)' })
+  }
+
+  return (
+    <div
+      className={`tilt-card ${className}`}
+      ref={card}
+      onPointerEnter={startTilt}
+      onPointerMove={move}
+      onPointerLeave={reset}
+    >
+      {children}
+    </div>
+  )
 }
 
 function DestinationStory({ item, index, reducedMotion }) {
@@ -462,7 +495,7 @@ function DestinationStory({ item, index, reducedMotion }) {
           </div>
         )}
 
-        <TiltCard className="info-card">
+        <TiltCard className="info-card" reducedMotion={reducedMotion}>
           <div className="card-topline">
             <span><Sparkles size={14} /> {item.category}</span>
             <span>RADAR INDICA · {item.number}</span>
@@ -602,15 +635,36 @@ function MemoryStrip({ reducedMotion }) {
   )
 }
 
-function BoardingPass({ onOpen }) {
+function BoardingPass({ onOpen, reducedMotion }) {
   const pass = useRef(null)
+  const rect = useRef(null)
+  const quick = useRef(null)
+
+  useEffect(() => {
+    if (!pass.current) return
+    quick.current = {
+      rotateY: gsap.quickTo(pass.current, 'rotateY', { duration: 0.5, ease: 'power2.out' }),
+      rotateX: gsap.quickTo(pass.current, 'rotateX', { duration: 0.5, ease: 'power2.out' }),
+    }
+  }, [])
+
+  const startTilt = () => {
+    if (reducedMotion || !pass.current) return
+    rect.current = pass.current.getBoundingClientRect()
+  }
 
   const move = (event) => {
-    if (!pass.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const rect = pass.current.getBoundingClientRect()
-    const x = (event.clientX - rect.left) / rect.width - 0.5
-    const y = (event.clientY - rect.top) / rect.height - 0.5
-    gsap.to(pass.current, { rotateY: x * 7, rotateX: -y * 7, duration: 0.5, ease: 'power2.out' })
+    if (reducedMotion || !rect.current || !quick.current) return
+    const x = (event.clientX - rect.current.left) / rect.current.width - 0.5
+    const y = (event.clientY - rect.current.top) / rect.current.height - 0.5
+    quick.current.rotateY(x * 7)
+    quick.current.rotateX(-y * 7)
+  }
+
+  const resetTilt = () => {
+    rect.current = null
+    if (!pass.current) return
+    gsap.to(pass.current, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'elastic.out(1,.55)' })
   }
 
   return (
@@ -629,7 +683,7 @@ function BoardingPass({ onOpen }) {
           </p>
         </div>
       </div>
-      <div className="pass-perspective" onPointerMove={move} onPointerLeave={() => gsap.to(pass.current, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'elastic.out(1,.55)' })}>
+      <div className="pass-perspective" onPointerEnter={startTilt} onPointerMove={move} onPointerLeave={resetTilt}>
         <article className="boarding-pass" ref={pass} aria-label="Guia de destino Radar para Campos do Jordão">
           <div className="pass-main">
             <div className="pass-brand"><RadarLogo variant="wordmark" decorative /><small>GUIA DE DESTINO</small></div>
@@ -819,26 +873,54 @@ function WhatsAppFloat({ reducedMotion }) {
 
 function App() {
   const [loaded, setLoaded] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
   const [soundOn, setSoundOn] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const audio = useRef(null)
+  const navProgress = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
-    const update = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight
-      setScrollProgress(max > 0 ? window.scrollY / max : 0)
+    // Rola suavemente até os links internos (#roteiro, #embarque, #top...) via
+    // GSAP em vez de `scroll-behavior: smooth` no CSS — o smooth scroll nativo
+    // do navegador entra em conflito com o loop de rAF do ScrollTrigger e
+    // deixa as animações com scrub soluçando durante e logo após a rolagem.
+    const onClick = (event) => {
+      if (reducedMotion) return
+      const anchor = event.target.closest('a[href^="#"]')
+      if (!anchor) return
+      const id = anchor.getAttribute('href').slice(1)
+      const target = document.getElementById(id)
+      if (!target) return
+      event.preventDefault()
+      gsap.to(window, { duration: 1, ease: 'power2.inOut', scrollTo: { y: target, autoKill: true } })
     }
-    update()
-    window.addEventListener('scroll', update, { passive: true })
-    return () => window.removeEventListener('scroll', update)
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [reducedMotion])
+
+  useEffect(() => {
+    // Atualiza a barra de progresso direto no DOM via ScrollTrigger em vez de
+    // um listener de scroll + estado do React, que forçava um re-render de
+    // toda a árvore a cada tick de scroll e competia com as animações do GSAP.
+    const trigger = ScrollTrigger.create({
+      start: 0,
+      end: () => Math.max(1, document.documentElement.scrollHeight - window.innerHeight),
+      onUpdate: (self) => {
+        navProgress.current?.style.setProperty('--progress', self.progress)
+      },
+      invalidateOnRefresh: true,
+    })
+    return () => trigger.kill()
   }, [])
 
   useEffect(() => {
     if (!loaded) return
     document.body.classList.add('ready')
     ScrollTrigger.refresh()
+    // As fontes do Google Fonts chegam depois do primeiro paint; sem esse
+    // refresh, os pontos de início/fim dos ScrollTriggers ficam calculados
+    // com o layout "errado" (antes do reflow do web font) até o próximo resize.
+    document.fonts?.ready?.then(() => ScrollTrigger.refresh())
   }, [loaded])
 
   useEffect(() => () => {
@@ -880,7 +962,7 @@ function App() {
   return (
     <>
       {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
-      <FlightNav progress={scrollProgress} soundOn={soundOn} toggleSound={toggleSound} />
+      <FlightNav progressRef={navProgress} soundOn={soundOn} toggleSound={toggleSound} />
       <main>
         <AirplaneIntro reducedMotion={reducedMotion} />
         <RouteBriefing reducedMotion={reducedMotion} />
@@ -902,7 +984,7 @@ function App() {
         />
         <DestinationStory item={destinations[2]} index={2} reducedMotion={reducedMotion} />
         <MemoryStrip reducedMotion={reducedMotion} />
-        <BoardingPass onOpen={() => setModalOpen(true)} />
+        <BoardingPass onOpen={() => setModalOpen(true)} reducedMotion={reducedMotion} />
       </main>
       <footer>
         <a className="footer-brand" href="#top" aria-label="Radar Viagem e Turismo — voltar ao início"><RadarLogo variant="full" /></a>

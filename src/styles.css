@@ -12,7 +12,6 @@
   background: var(--ink);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  scroll-behavior: smooth;
 }
 
 * {
@@ -220,6 +219,7 @@ a {
 }
 
 .nav-progress {
+  --progress: 0;
   position: absolute;
   left: 13px;
   right: 13px;
