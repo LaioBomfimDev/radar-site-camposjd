@@ -218,6 +218,22 @@ a {
   background: var(--acid);
 }
 
+.forest-sound-button {
+  margin-top: 18px;
+  background: rgba(7, 18, 14, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+}
+
+.forest-sound-button span {
+  display: inline;
+}
+
+.forest-sound-button:hover,
+.forest-sound-button:focus-visible {
+  background: rgba(7, 18, 14, 0.5);
+}
+
 .nav-progress {
   --progress: 0;
   position: absolute;
@@ -290,8 +306,17 @@ a {
 .wing {
   position: absolute;
   z-index: 2;
-  right: -16%;
-  bottom: 12%;
+  /* Ancorado no viewport (calc a partir da MESMA fórmula do tamanho de
+     repouso do .sky-window abaixo), não em % do .sky-window, de propósito:
+     como a janela cresce de um oval pequeno até 100vw/100svh durante o
+     scroll, um offset em % dela recalcula sobre uma base que multiplica
+     muito ao longo da animação e a asa "escapa" do canto — parece
+     desconectada da janela. Com o offset fixo no viewport, a asa fica no
+     mesmo lugar da tela o scroll inteiro e só é revelada aos poucos
+     conforme a janela cresce por cima dela; ajuste os dois lados juntos
+     se mudar o tamanho de repouso do .sky-window. */
+  right: calc(-0.16 * min(68vw, 360px));
+  bottom: calc(0.12 * min(55svh, 540px));
   width: min(78vw, 850px);
   filter: drop-shadow(0 25px 22px rgba(0, 0, 0, 0.24));
   fill: rgba(224, 229, 226, 0.94);
@@ -1955,6 +1980,7 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
 @media (min-width: 1100px) {
   .flight-nav { left: 32px; right: 32px; }
   .sky-window { width: min(26vw, 400px); height: min(58vh, 610px); }
+  .wing { right: calc(-0.16 * min(26vw, 400px)); bottom: calc(0.12 * min(58vh, 610px)); }
   .cabin-shell::before, .cabin-shell::after { width: 31vw; }
   .cabin-ceiling { width: 60%; }
   .window-rim { width: min(28vw, 430px); height: min(62vh, 650px); }
