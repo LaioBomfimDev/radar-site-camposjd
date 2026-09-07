@@ -203,35 +203,23 @@ function AirplaneIntro({ reducedMotion }) {
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       if (reducedMotion) return
-      const skyWindow = root.current.querySelector('.sky-window')
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
           end: 'bottom bottom',
           scrub: 1,
-          // Recalcula os alvos de escala (funções abaixo) sempre que o
-          // ScrollTrigger é atualizado, então um resize/refresh não deixa
-          // a janela crescendo até um tamanho errado.
-          invalidateOnRefresh: true,
         },
       })
       tl.to('.boarding-copy', { y: 45, opacity: 0, duration: 0.42, ease: 'power2.in' }, 0)
-        // Cresce via transform (scaleX/scaleY), não width/height: animar
-        // width/height força layout+repaint do vídeo/asa a cada frame do
-        // scroll, e sob scrub rápido esse repaint não acompanha o
-        // compositor — a asa (que tem seu próprio transform) fica um
-        // frame para trás e aparece "descolada"/fantasma. Com scale só o
-        // compositor trabalha e todo o conteúdo escala junto, como uma
-        // peça só. As funções leem o tamanho de repouso atual do
-        // elemento, então continuam corretas em qualquer breakpoint.
-        .to('.sky-window', {
-          scaleX: () => window.innerWidth / skyWindow.offsetWidth,
-          scaleY: () => window.innerHeight / skyWindow.offsetHeight,
-          borderRadius: 0,
-          duration: 1.6,
-          ease: 'none',
-        }, 0)
+        // O "buraco" cresce via clip-path (não width/height nem transform:
+        // scale na caixa): o conteúdo em si — vídeo, asa, glint — é sempre
+        // do tamanho da tela e nunca se move, então nada dentro pode
+        // "descolar" (width/height força repaint a cada frame e sob scrub
+        // rápido esse repaint atrasa em relação ao transform da asa) nem
+        // distorcer (scale não-uniforme esticaria vídeo/asa, já que a
+        // janela vai de oval em pé para retângulo deitado).
+        .to('.sky-window', { clipPath: 'inset(0% round 0%)', duration: 1.6, ease: 'none' }, 0)
         .to('.cabin-shell', { opacity: 0, scale: 1.1, duration: 1.6, ease: 'none' }, 0)
         .to('.window-glint', { xPercent: 190, duration: 1.6, ease: 'none' }, 0)
         .fromTo('.flight-hero-copy', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out' }, 1.55)

@@ -272,23 +272,26 @@ a {
 }
 
 .sky-window {
-  /* O crescimento até tela cheia é feito via transform (scaleX/scaleY) pelo
-     GSAP, não animando width/height: animar width/height força layout+
-     repaint completo do vídeo/asa a cada frame do scroll, e sob scrub
-     rápido esse repaint não acompanha o compositor — a asa (que tem seu
-     próprio transform) "descola" e aparece fantasma numa posição antiga
-     por um frame. Com scale só o compositor trabalha, então o conteúdo
-     inteiro (vídeo, asa, glint) escala junto, sempre em um único pedaço. */
+  /* O conteúdo (vídeo, asa, glint) é sempre do tamanho da tela inteira e
+     nunca se move nem redimensiona — só a área visível cresce, via
+     clip-path. Tentativas anteriores redimensionavam esta caixa
+     (width/height ou transform: scale): width/height força layout+repaint
+     do vídeo/asa a cada frame de scroll e, sob scrub rápido, esse repaint
+     não acompanha o compositor — a asa "descolava" e sobrava um fantasma
+     numa posição antiga; scale não-uniforme (a janela vai de oval em pé
+     para retângulo deitado) esticava o vídeo e a asa, deformando tudo.
+     Com clip-path nada dentro é redimensionado — só a "vidraça" que
+     revela mais dessa mesma cena parada, sem nenhuma chance de desync
+     ou distorção. */
   position: absolute;
-  z-index: 1;
-  top: 50%;
-  left: 50%;
-  width: min(68vw, 360px);
-  height: min(55svh, 540px);
+  inset: 0;
   overflow: hidden;
-  transform: translate(-50%, -50%);
-  border-radius: 46% 46% 40% 40% / 32% 32% 49% 49%;
-  will-change: transform, border-radius;
+  clip-path: inset(
+    calc((100% - min(55svh, 540px)) / 2)
+    calc((100% - min(68vw, 360px)) / 2)
+    round 45%
+  );
+  will-change: clip-path;
 }
 
 .sky-video,
@@ -305,15 +308,15 @@ a {
 }
 
 .wing {
-  /* % simples de novo: como o .sky-window agora cresce por transform
-     (escala o conteúdo inteiro, não redimensiona a caixa), o tamanho do
-     pai nunca muda de verdade durante o scroll, então essa % sempre
-     resolve para o mesmo valor relativo — a asa escala junto com o vídeo
-     e o glint, como uma única peça, em vez de recalcular sozinha. */
+  /* Posicionada direto em % da tela (o .sky-window, o pai, é sempre
+     100vw/100svh — só o clip-path acima cresce). Como o conteúdo nunca
+     se move, essa é ao mesmo tempo a posição "vista pelo buraco pequeno"
+     e a posição final de repouso: a mesma asa parada, só que revelada
+     aos poucos. */
   position: absolute;
   z-index: 2;
-  right: -16%;
-  bottom: 12%;
+  right: -8%;
+  bottom: 30%;
   width: min(78vw, 850px);
   filter: drop-shadow(0 25px 22px rgba(0, 0, 0, 0.24));
   fill: rgba(224, 229, 226, 0.94);
@@ -1983,8 +1986,13 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
 
 @media (min-width: 1100px) {
   .flight-nav { left: 32px; right: 32px; }
-  .sky-window { width: min(26vw, 400px); height: min(58vh, 610px); }
-  .wing { right: calc(-0.16 * min(26vw, 400px)); bottom: calc(0.12 * min(58vh, 610px)); }
+  .sky-window {
+    clip-path: inset(
+      calc((100% - min(58vh, 610px)) / 2)
+      calc((100% - min(26vw, 400px)) / 2)
+      round 45%
+    );
+  }
   .cabin-shell::before, .cabin-shell::after { width: 31vw; }
   .cabin-ceiling { width: 60%; }
   .window-rim { width: min(28vw, 430px); height: min(62vh, 650px); }
@@ -2009,7 +2017,7 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
     transition-duration: .01ms !important;
   }
   .takeoff { height: 100svh; }
-  .sky-window { width: 100vw; height: 100svh; border-radius: 0; }
+  .sky-window { clip-path: none; }
   .cabin-shell, .boarding-copy { display: none; }
   .flight-hero-copy { opacity: 1; }
   .destination { height: 100svh; }
