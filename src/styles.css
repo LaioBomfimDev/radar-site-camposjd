@@ -272,6 +272,13 @@ a {
 }
 
 .sky-window {
+  /* O crescimento até tela cheia é feito via transform (scaleX/scaleY) pelo
+     GSAP, não animando width/height: animar width/height força layout+
+     repaint completo do vídeo/asa a cada frame do scroll, e sob scrub
+     rápido esse repaint não acompanha o compositor — a asa (que tem seu
+     próprio transform) "descola" e aparece fantasma numa posição antiga
+     por um frame. Com scale só o compositor trabalha, então o conteúdo
+     inteiro (vídeo, asa, glint) escala junto, sempre em um único pedaço. */
   position: absolute;
   z-index: 1;
   top: 50%;
@@ -280,14 +287,8 @@ a {
   height: min(55svh, 540px);
   overflow: hidden;
   transform: translate(-50%, -50%);
-  border: 7px solid #c8cbc1;
   border-radius: 46% 46% 40% 40% / 32% 32% 49% 49%;
-  box-shadow:
-    0 0 0 13px #5c625d,
-    0 0 0 26px #1a211e,
-    inset 0 0 50px rgba(0, 0, 0, 0.32),
-    0 35px 100px rgba(0, 0, 0, 0.55);
-  will-change: width, height, border-radius;
+  will-change: transform, border-radius;
 }
 
 .sky-video,
@@ -304,19 +305,15 @@ a {
 }
 
 .wing {
+  /* % simples de novo: como o .sky-window agora cresce por transform
+     (escala o conteúdo inteiro, não redimensiona a caixa), o tamanho do
+     pai nunca muda de verdade durante o scroll, então essa % sempre
+     resolve para o mesmo valor relativo — a asa escala junto com o vídeo
+     e o glint, como uma única peça, em vez de recalcular sozinha. */
   position: absolute;
   z-index: 2;
-  /* Ancorado no viewport (calc a partir da MESMA fórmula do tamanho de
-     repouso do .sky-window abaixo), não em % do .sky-window, de propósito:
-     como a janela cresce de um oval pequeno até 100vw/100svh durante o
-     scroll, um offset em % dela recalcula sobre uma base que multiplica
-     muito ao longo da animação e a asa "escapa" do canto — parece
-     desconectada da janela. Com o offset fixo no viewport, a asa fica no
-     mesmo lugar da tela o scroll inteiro e só é revelada aos poucos
-     conforme a janela cresce por cima dela; ajuste os dois lados juntos
-     se mudar o tamanho de repouso do .sky-window. */
-  right: calc(-0.16 * min(68vw, 360px));
-  bottom: calc(0.12 * min(55svh, 540px));
+  right: -16%;
+  bottom: 12%;
   width: min(78vw, 850px);
   filter: drop-shadow(0 25px 22px rgba(0, 0, 0, 0.24));
   fill: rgba(224, 229, 226, 0.94);
@@ -363,15 +360,22 @@ a {
 .cabin-shell::after { right: 0; transform: scaleX(-1); border-radius: 0 45% 45% 0 / 0 18% 18% 0; }
 
 .window-rim {
+  /* Carrega a moldura "de metal" que antes vivia na .sky-window: como ela
+     é filha de .cabin-shell, some junto no fade da cabine (opacity 0) em
+     vez de esticar/borrar quando a janela escala para tela cheia. */
   position: absolute;
   top: 50%;
   left: 50%;
   width: min(72vw, 380px);
   height: min(59svh, 580px);
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 7px solid #c8cbc1;
   border-radius: 46% 46% 40% 40% / 32% 32% 49% 49%;
-  box-shadow: 0 0 70px rgba(255,255,255,.05);
+  box-shadow:
+    0 0 0 13px #5c625d,
+    0 0 0 26px #1a211e,
+    inset 0 0 50px rgba(0, 0, 0, 0.32),
+    0 35px 100px rgba(0, 0, 0, 0.55);
 }
 
 .cabin-ceiling {
@@ -2005,7 +2009,7 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
     transition-duration: .01ms !important;
   }
   .takeoff { height: 100svh; }
-  .sky-window { width: 100vw; height: 100svh; border: 0; border-radius: 0; box-shadow: none; }
+  .sky-window { width: 100vw; height: 100svh; border-radius: 0; }
   .cabin-shell, .boarding-copy { display: none; }
   .flight-hero-copy { opacity: 1; }
   .destination { height: 100svh; }
