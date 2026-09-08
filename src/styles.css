@@ -986,33 +986,48 @@ a {
 .leaf-particle:nth-child(6) { left: 88%; bottom: 22%; font-size: 15px; }
 .leaf-particle:nth-child(7) { left: 50%; bottom: 8%; font-size: 12px; }
 
+.destination-2 {
+  --cable-width: clamp(76px, 14vw, 180px);
+  --gondola-width: clamp(46px, 7vw, 86px);
+  --gondola-height: clamp(56px, 8vw, 100px);
+}
+
+.destination-2 .destination-copy {
+  right: calc(var(--cable-width) + 40px);
+}
+
+.destination-2 .destination-title {
+  font-size: clamp(2.4rem, 11vw, 9rem);
+}
+
 .cable-scene {
   position: absolute;
-  /* Acima do texto (z-index 5), para a gôndola cruzar por cima do título em
-     vez de sumir atrás dele durante o trecho diagonal da subida. */
-  z-index: 6;
-  inset: 0;
-  overflow: hidden;
+  z-index: 3;
+  top: 20%;
+  right: 16px;
+  width: var(--cable-width);
+  height: clamp(130px, 24svh, 240px);
   pointer-events: none;
 }
 
 .cable-line {
   position: absolute;
-  top: 32%;
-  left: -8%;
-  width: 120%;
-  height: 2px;
-  transform: rotate(-24deg);
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  top: 0;
+  left: calc(var(--gondola-width) / 2);
+  width: calc(100% - var(--gondola-width));
+  height: calc(100% - var(--gondola-height) - 28px);
+  overflow: visible;
+  stroke: rgba(255,255,255,.65);
+  stroke-width: 2px;
 }
 
 .gondola {
   position: absolute;
-  top: 38%;
-  left: 20%;
-  width: 80px;
-  height: 92px;
+  top: 0;
+  left: 0;
+  width: var(--gondola-width);
+  height: var(--gondola-height);
+  transform: translateY(28px);
   border: 3px solid rgba(238, 239, 230, 0.92);
   border-radius: 18px 18px 26px 26px;
   background: rgba(15, 31, 29, 0.7);
@@ -1024,7 +1039,7 @@ a {
   content: '';
   position: absolute;
   top: -28px;
-  left: 37px;
+  left: calc(50% - 2px);
   width: 4px;
   height: 28px;
   background: white;
@@ -1034,16 +1049,16 @@ a {
 .gondola i,
 .gondola b {
   position: absolute;
-  top: 24px;
-  width: 14px;
-  height: 26px;
+  top: 24%;
+  width: 18%;
+  height: 28%;
   border-radius: 10px 10px 4px 4px;
   background: rgba(255,255,255,.2);
 }
 
-.gondola span { left: 11px; }
-.gondola i { left: 31px; }
-.gondola b { left: 51px; }
+.gondola span { left: 12%; }
+.gondola i { left: 41%; }
+.gondola b { left: 70%; }
 
 .train-scene {
   position: absolute;
@@ -1923,7 +1938,9 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
   .info-card { right: 5vw; bottom: 55px; left: auto; width: min(43vw, 520px); padding: 25px; }
   .destination-index { top: 90px; right: 5vw; }
   .swipe-hint { left: 6vw; transform: none; }
-  .gondola { width: 106px; height: 116px; }
+  .destination-2 .destination-copy { right: calc(var(--cable-width) + 8vw); }
+  .destination-2 .destination-title { font-size: clamp(4.8rem, 10.2vw, 9rem); }
+  .cable-scene { right: 5vw; }
   .memory-sticky { padding-top: 110px; }
   .memory-intro { padding: 0 6vw; }
   .memory-track { left: 6vw; gap: 25px; }

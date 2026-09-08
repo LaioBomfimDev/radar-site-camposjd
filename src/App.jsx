@@ -446,11 +446,16 @@ function DestinationStory({ item, index, reducedMotion }) {
         })
       }
       if (index === 1) {
-        gsap.fromTo('.gondola', { xPercent: -95, yPercent: 100 }, {
-          xPercent: 95,
-          yPercent: -80,
+        const cable = root.current.querySelector('.cable-scene')
+        const gondola = cable.querySelector('.gondola')
+        gsap.fromTo(gondola, {
+          x: 0,
+          y: () => cable.clientHeight - gondola.offsetHeight,
+        }, {
+          x: () => cable.clientWidth - gondola.offsetWidth,
+          y: 28,
           ease: 'none',
-          scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: 1 },
+          scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: 1, invalidateOnRefresh: true },
         })
       }
       if (index === 2) {
@@ -493,7 +498,7 @@ function DestinationStory({ item, index, reducedMotion }) {
         {index === 0 && <div className="leaf-field" aria-hidden="true">{Array.from({ length: 7 }).map((_, i) => <i className="leaf-particle" key={i}>◒</i>)}</div>}
         {index === 1 && (
           <div className="cable-scene" aria-hidden="true">
-            <div className="cable-line" />
+            <svg className="cable-line" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="100" x2="100" y2="0" vectorEffect="non-scaling-stroke" /></svg>
             <div className="gondola"><span /><i /><b /></div>
           </div>
         )}
