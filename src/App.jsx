@@ -688,11 +688,15 @@ function MemoryStrip({ reducedMotion }) {
             <figure className="memory-card" key={item.id}>
               <img src={item.image} alt="" loading="lazy" decoding="async" />
               <figcaption><span>0{index + 1} · {item.short}</span><strong>{item.memory}</strong></figcaption>
-              <div className="stamp">NO RADAR<br /><b>CJ • SP</b></div>
+              <div className="stamp" aria-label="Radar indica: Campos do Jordão, São Paulo">
+                <Mountain size={18} strokeWidth={1.5} aria-hidden="true" />
+                <span className="stamp-brand">RADAR INDICA</span>
+                <span className="stamp-destination">Campos do<br />Jordão · SP</span>
+              </div>
             </figure>
           ))}
           <div className="memory-quote">
-            <p>Viajar bem é<br /><em>estar inteiro</em><br />onde você está.</p>
+            <p>Uma boa viagem passa.<br /><em>As boas lembranças</em><br />ficam com você.</p>
             <Plane size={44} strokeWidth={1.2} />
           </div>
         </div>
