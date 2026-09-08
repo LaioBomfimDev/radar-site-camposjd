@@ -246,15 +246,14 @@ function AirplaneIntro({ reducedMotion }) {
           <video
             ref={video}
             className="sky-video"
-            poster="/media/sky-poster.webp"
+            poster="/media/janela-poster.webp"
             muted
             loop
             playsInline
             preload="metadata"
-            aria-label="Nuvens vistas pela janela de um avião"
+            aria-label="Vista real da janela do avião, sobre nuvens e litoral, na volta para casa"
           >
-            <source src="/media/clouds.webm" type="video/webm" />
-            <source src="https://upload.wikimedia.org/wikipedia/commons/5/54/Clouds_Time_Lapse.webm" type="video/webm" />
+            <source src="/media/janela-real.webm" type="video/webm" />
           </video>
           <div className="sky-color" />
           <div className="window-glint" />
