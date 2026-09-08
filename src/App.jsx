@@ -171,7 +171,7 @@ function Preloader({ onComplete }) {
   )
 }
 
-function FlightNav({ progressRef }) {
+function FlightNav({ progressRef, soundOn, toggleSound }) {
   return (
     <header className="flight-nav" aria-label="Navegação principal">
       <a className="brand" href="#top" aria-label="Radar Viagem e Turismo — início">
@@ -179,6 +179,10 @@ function FlightNav({ progressRef }) {
         <RadarLogo variant="wordmark" className="nav-radar-logo" eager decorative />
       </a>
       <div className="nav-actions">
+        <button className="sound-button" onClick={toggleSound} aria-pressed={soundOn} aria-label={soundOn ? 'Desligar som ambiente' : 'Ligar som ambiente'}>
+          {soundOn ? <CirclePause size={16} /> : <CirclePlay size={16} />}
+          <span>{soundOn ? 'serra ligada' : 'ouvir a serra'}</span>
+        </button>
         <a className="route-button" href="#roteiro">Ver roteiro <ArrowRight size={15} /></a>
       </div>
       <div className="nav-progress" ref={progressRef} />
@@ -212,14 +216,7 @@ function AirplaneIntro({ reducedMotion }) {
         },
       })
       tl.to('.boarding-copy', { y: 45, opacity: 0, duration: 0.42, ease: 'power2.in' }, 0)
-        // O "buraco" cresce via clip-path (não width/height nem transform:
-        // scale na caixa): o conteúdo em si — vídeo, asa, glint — é sempre
-        // do tamanho da tela e nunca se move, então nada dentro pode
-        // "descolar" (width/height força repaint a cada frame e sob scrub
-        // rápido esse repaint atrasa em relação ao transform da asa) nem
-        // distorcer (scale não-uniforme esticaria vídeo/asa, já que a
-        // janela vai de oval em pé para retângulo deitado).
-        .to('.sky-window', { clipPath: 'inset(0% round 0%)', duration: 1.6, ease: 'none' }, 0)
+        .to('.sky-window', { width: '100vw', height: '100svh', borderRadius: 0, duration: 1.6, ease: 'none' }, 0)
         .to('.cabin-shell', { opacity: 0, scale: 1.1, duration: 1.6, ease: 'none' }, 0)
         .to('.window-glint', { xPercent: 190, duration: 1.6, ease: 'none' }, 0)
         .fromTo('.flight-hero-copy', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out' }, 1.55)
@@ -399,138 +396,10 @@ function TiltCard({ children, className = '', reducedMotion = false }) {
   )
 }
 
-function playForestChirp(ctx, destination) {
-  const now = ctx.currentTime
-  const osc = ctx.createOscillator()
-  osc.type = 'sine'
-  const gain = ctx.createGain()
-  gain.gain.value = 0
-  osc.connect(gain)
-  gain.connect(destination)
-  const base = 1900 + Math.random() * 1000
-  osc.frequency.setValueAtTime(base, now)
-  osc.frequency.exponentialRampToValueAtTime(base * 1.35, now + 0.09)
-  osc.frequency.exponentialRampToValueAtTime(base * 0.85, now + 0.19)
-  gain.gain.linearRampToValueAtTime(0.03, now + 0.02)
-  gain.gain.linearRampToValueAtTime(0, now + 0.24)
-  osc.start(now)
-  osc.stop(now + 0.26)
-}
-
-function startForestAmbience(state) {
-  if (state.ctx) return
-  const AudioContext = window.AudioContext || window.webkitAudioContext
-  if (!AudioContext) return
-  const ctx = new AudioContext()
-
-  // Ruído marrom (integração do ruído branco) filtrado como o "sopro" do
-  // vento nas árvores — bem mais parecido com floresta do que ruído branco cru.
-  const bufferSize = ctx.sampleRate * 2
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-  const data = buffer.getChannelData(0)
-  let last = 0
-  for (let i = 0; i < bufferSize; i++) {
-    const white = Math.random() * 2 - 1
-    last = (last + 0.02 * white) / 1.02
-    data[i] = last * 3.2
-  }
-  const noise = ctx.createBufferSource()
-  noise.buffer = buffer
-  noise.loop = true
-
-  const windFilter = ctx.createBiquadFilter()
-  windFilter.type = 'bandpass'
-  windFilter.frequency.value = 650
-  windFilter.Q.value = 0.5
-
-  // LFO lento na frequência do filtro simula rajadas de vento passando.
-  const lfo = ctx.createOscillator()
-  lfo.frequency.value = 0.06
-  const lfoGain = ctx.createGain()
-  lfoGain.gain.value = 200
-  lfo.connect(lfoGain)
-  lfoGain.connect(windFilter.frequency)
-
-  const windGain = ctx.createGain()
-  windGain.gain.value = 0.045
-
-  const masterGain = ctx.createGain()
-  masterGain.gain.setValueAtTime(0, ctx.currentTime)
-  masterGain.gain.linearRampToValueAtTime(1, ctx.currentTime + 2)
-
-  noise.connect(windFilter)
-  windFilter.connect(windGain)
-  windGain.connect(masterGain)
-  masterGain.connect(ctx.destination)
-
-  noise.start()
-  lfo.start()
-
-  state.ctx = ctx
-  state.nodes = { noise, lfo, masterGain }
-
-  // Scroll não conta como gesto do usuário para o autoplay do Web Audio;
-  // se o contexto nascer suspenso, ele destrava no primeiro clique/tecla.
-  if (ctx.state === 'suspended') {
-    const unlock = () => ctx.resume().catch(() => {})
-    ;['pointerdown', 'keydown', 'touchend'].forEach((type) => window.addEventListener(type, unlock, { once: true }))
-  }
-
-  const scheduleChirp = () => {
-    const delay = 5000 + Math.random() * 8000
-    state.chirpTimer = window.setTimeout(() => {
-      if (!state.ctx) return
-      playForestChirp(ctx, masterGain)
-      scheduleChirp()
-    }, delay)
-  }
-  scheduleChirp()
-}
-
-function stopForestAmbience(state) {
-  window.clearTimeout(state.chirpTimer)
-  state.chirpTimer = null
-  const ctx = state.ctx
-  const nodes = state.nodes
-  state.ctx = null
-  state.nodes = null
-  if (!ctx || !nodes) return
-  const { noise, lfo, masterGain } = nodes
-  const now = ctx.currentTime
-  masterGain.gain.cancelScheduledValues(now)
-  masterGain.gain.setValueAtTime(masterGain.gain.value, now)
-  masterGain.gain.linearRampToValueAtTime(0, now + 0.8)
-  window.setTimeout(() => {
-    noise.stop()
-    lfo.stop()
-    ctx.close()
-  }, 850)
-}
-
 function DestinationStory({ item, index, reducedMotion }) {
   const root = useRef(null)
   const [activeFact, setActiveFact] = useState(0)
-  const [forestSoundOn, setForestSoundOn] = useState(true)
-  const forest = useRef({ ctx: null, nodes: null, chirpTimer: null })
   const Icon = item.icon
-
-  useEffect(() => {
-    if (index !== 0) return
-    if (!forestSoundOn) {
-      stopForestAmbience(forest.current)
-      return
-    }
-    const el = root.current
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) startForestAmbience(forest.current)
-      else stopForestAmbience(forest.current)
-    }, { threshold: 0.3 })
-    observer.observe(el)
-    return () => {
-      observer.disconnect()
-      stopForestAmbience(forest.current)
-    }
-  }, [index, forestSoundOn])
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -610,18 +479,6 @@ function DestinationStory({ item, index, reducedMotion }) {
         <div className="destination-copy">
           <p><Icon size={16} /> {item.eyebrow}</p>
           <h2 className="destination-title">{item.title.split('\n').map((line) => <span key={line}>{line}</span>)}</h2>
-          {index === 0 && (
-            <button
-              type="button"
-              className="sound-button forest-sound-button"
-              onClick={() => setForestSoundOn((value) => !value)}
-              aria-pressed={forestSoundOn}
-              aria-label={forestSoundOn ? 'Silenciar som da floresta' : 'Ativar som da floresta'}
-            >
-              {forestSoundOn ? <CirclePause size={14} /> : <CirclePlay size={14} />}
-              <span>{forestSoundOn ? 'som da floresta' : 'som desligado'}</span>
-            </button>
-          )}
         </div>
 
         {index === 0 && <div className="leaf-field" aria-hidden="true">{Array.from({ length: 7 }).map((_, i) => <i className="leaf-particle" key={i}>◒</i>)}</div>}
@@ -1016,7 +873,9 @@ function WhatsAppFloat({ reducedMotion }) {
 
 function App() {
   const [loaded, setLoaded] = useState(false)
+  const [soundOn, setSoundOn] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
+  const audio = useRef(null)
   const navProgress = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
 
@@ -1064,10 +923,46 @@ function App() {
     document.fonts?.ready?.then(() => ScrollTrigger.refresh())
   }, [loaded])
 
+  useEffect(() => () => {
+    if (audio.current) audio.current.close()
+  }, [])
+
+  const toggleSound = () => {
+    if (soundOn) {
+      audio.current?.close()
+      audio.current = null
+      setSoundOn(false)
+      return
+    }
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext
+    if (!AudioContext) return
+    const ctx = new AudioContext()
+    const gain = ctx.createGain()
+    const filter = ctx.createBiquadFilter()
+    const osc1 = ctx.createOscillator()
+    const osc2 = ctx.createOscillator()
+    osc1.type = 'sine'
+    osc2.type = 'triangle'
+    osc1.frequency.value = 54
+    osc2.frequency.value = 82
+    filter.type = 'lowpass'
+    filter.frequency.value = 180
+    gain.gain.value = 0.018
+    osc1.connect(filter)
+    osc2.connect(filter)
+    filter.connect(gain)
+    gain.connect(ctx.destination)
+    osc1.start()
+    osc2.start()
+    audio.current = ctx
+    setSoundOn(true)
+  }
+
   return (
     <>
       {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
-      <FlightNav progressRef={navProgress} />
+      <FlightNav progressRef={navProgress} soundOn={soundOn} toggleSound={toggleSound} />
       <main>
         <AirplaneIntro reducedMotion={reducedMotion} />
         <RouteBriefing reducedMotion={reducedMotion} />

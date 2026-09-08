@@ -218,22 +218,6 @@ a {
   background: var(--acid);
 }
 
-.forest-sound-button {
-  margin-top: 18px;
-  background: rgba(7, 18, 14, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(10px);
-}
-
-.forest-sound-button span {
-  display: inline;
-}
-
-.forest-sound-button:hover,
-.forest-sound-button:focus-visible {
-  background: rgba(7, 18, 14, 0.5);
-}
-
 .nav-progress {
   --progress: 0;
   position: absolute;
@@ -272,26 +256,22 @@ a {
 }
 
 .sky-window {
-  /* O conteúdo (vídeo, asa, glint) é sempre do tamanho da tela inteira e
-     nunca se move nem redimensiona — só a área visível cresce, via
-     clip-path. Tentativas anteriores redimensionavam esta caixa
-     (width/height ou transform: scale): width/height força layout+repaint
-     do vídeo/asa a cada frame de scroll e, sob scrub rápido, esse repaint
-     não acompanha o compositor — a asa "descolava" e sobrava um fantasma
-     numa posição antiga; scale não-uniforme (a janela vai de oval em pé
-     para retângulo deitado) esticava o vídeo e a asa, deformando tudo.
-     Com clip-path nada dentro é redimensionado — só a "vidraça" que
-     revela mais dessa mesma cena parada, sem nenhuma chance de desync
-     ou distorção. */
   position: absolute;
-  inset: 0;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: min(68vw, 360px);
+  height: min(55svh, 540px);
   overflow: hidden;
-  clip-path: inset(
-    calc((100% - min(55svh, 540px)) / 2)
-    calc((100% - min(68vw, 360px)) / 2)
-    round 45%
-  );
-  will-change: clip-path;
+  transform: translate(-50%, -50%);
+  border: 7px solid #c8cbc1;
+  border-radius: 46% 46% 40% 40% / 32% 32% 49% 49%;
+  box-shadow:
+    0 0 0 13px #5c625d,
+    0 0 0 26px #1a211e,
+    inset 0 0 50px rgba(0, 0, 0, 0.32),
+    0 35px 100px rgba(0, 0, 0, 0.55);
+  will-change: width, height, border-radius;
 }
 
 .sky-video,
@@ -308,15 +288,10 @@ a {
 }
 
 .wing {
-  /* Posicionada direto em % da tela (o .sky-window, o pai, é sempre
-     100vw/100svh — só o clip-path acima cresce). Como o conteúdo nunca
-     se move, essa é ao mesmo tempo a posição "vista pelo buraco pequeno"
-     e a posição final de repouso: a mesma asa parada, só que revelada
-     aos poucos. */
   position: absolute;
   z-index: 2;
-  right: -8%;
-  bottom: 30%;
+  right: -16%;
+  bottom: 12%;
   width: min(78vw, 850px);
   filter: drop-shadow(0 25px 22px rgba(0, 0, 0, 0.24));
   fill: rgba(224, 229, 226, 0.94);
@@ -363,22 +338,15 @@ a {
 .cabin-shell::after { right: 0; transform: scaleX(-1); border-radius: 0 45% 45% 0 / 0 18% 18% 0; }
 
 .window-rim {
-  /* Carrega a moldura "de metal" que antes vivia na .sky-window: como ela
-     é filha de .cabin-shell, some junto no fade da cabine (opacity 0) em
-     vez de esticar/borrar quando a janela escala para tela cheia. */
   position: absolute;
   top: 50%;
   left: 50%;
   width: min(72vw, 380px);
   height: min(59svh, 580px);
   transform: translate(-50%, -50%);
-  border: 7px solid #c8cbc1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 46% 46% 40% 40% / 32% 32% 49% 49%;
-  box-shadow:
-    0 0 0 13px #5c625d,
-    0 0 0 26px #1a211e,
-    inset 0 0 50px rgba(0, 0, 0, 0.32),
-    0 35px 100px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 70px rgba(255,255,255,.05);
 }
 
 .cabin-ceiling {
@@ -1986,13 +1954,7 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
 
 @media (min-width: 1100px) {
   .flight-nav { left: 32px; right: 32px; }
-  .sky-window {
-    clip-path: inset(
-      calc((100% - min(58vh, 610px)) / 2)
-      calc((100% - min(26vw, 400px)) / 2)
-      round 45%
-    );
-  }
+  .sky-window { width: min(26vw, 400px); height: min(58vh, 610px); }
   .cabin-shell::before, .cabin-shell::after { width: 31vw; }
   .cabin-ceiling { width: 60%; }
   .window-rim { width: min(28vw, 430px); height: min(62vh, 650px); }
@@ -2017,7 +1979,7 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
     transition-duration: .01ms !important;
   }
   .takeoff { height: 100svh; }
-  .sky-window { clip-path: none; }
+  .sky-window { width: 100vw; height: 100svh; border: 0; border-radius: 0; box-shadow: none; }
   .cabin-shell, .boarding-copy { display: none; }
   .flight-hero-copy { opacity: 1; }
   .destination { height: 100svh; }
