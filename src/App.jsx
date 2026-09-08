@@ -4,8 +4,6 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
-  CirclePause,
-  CirclePlay,
   Leaf,
   MapPin,
   Mountain,
@@ -29,7 +27,7 @@ const whatsappUrl = (message) =>
   `https://api.whatsapp.com/send/?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0&utm_source=site-campos-do-jordao`
 
 const generalWhatsappUrl = whatsappUrl(
-  'Olá, Radar! Vi o roteiro de Campos do Jordão e quero saber mais sobre o destino, valores, hospedagens e como garantir minha viagem.',
+  'Olá, Radar! Vi as sugestões da Radar para Campos do Jordão e quero saber mais sobre o destino, valores, hospedagens e como garantir minha viagem.',
 )
 
 const destinations = [
@@ -178,7 +176,7 @@ function Preloader({ onComplete }) {
   )
 }
 
-function FlightNav({ progressRef, soundOn, soundLabel, toggleSound }) {
+function FlightNav({ progressRef }) {
   return (
     <header className="flight-nav" aria-label="Navegação principal">
       <a className="brand" href="#top" aria-label="Radar Viagem e Turismo — início">
@@ -186,11 +184,7 @@ function FlightNav({ progressRef, soundOn, soundLabel, toggleSound }) {
         <RadarLogo variant="wordmark" className="nav-radar-logo" eager decorative />
       </a>
       <div className="nav-actions">
-        <button className="sound-button" onClick={toggleSound} aria-pressed={soundOn} aria-label={soundOn ? 'Desligar som ambiente' : 'Ligar som ambiente'}>
-          {soundOn ? <CirclePause size={16} /> : <CirclePlay size={16} />}
-          <span>{soundLabel}</span>
-        </button>
-        <a className="route-button" href="#roteiro">Ver roteiro <ArrowRight size={15} /></a>
+        <a className="route-button" href="#roteiro">Ver dicas <ArrowRight size={15} /></a>
       </div>
       <div className="nav-progress" ref={progressRef} />
     </header>
@@ -277,7 +271,7 @@ function AirplaneIntro({ reducedMotion }) {
             </h1>
             <div className="hero-meta">
               <p>Suba a serra.<br /><strong>Deixe a pressa lá embaixo.</strong></p>
-              <div className="altimeter"><span>EXPERIÊNCIAS</span><strong className="altitude-value">0</strong><small>no roteiro</small></div>
+              <div className="altimeter"><span>SUGESTÕES</span><strong className="altitude-value">0</strong><small>da Radar</small></div>
             </div>
           </div>
         </div>
@@ -333,12 +327,12 @@ function RouteBriefing({ reducedMotion }) {
 
   return (
     <section className="briefing" id="roteiro" ref={root} aria-labelledby="briefing-title">
-      <div className="section-label"><span>00</span> SEU ROTEIRO</div>
+      <div className="section-label"><span>00</span> ROTEIROS QUE INDICAMOS</div>
       <div className="briefing-head">
         <h2 id="briefing-title">Três movimentos.<br /><em>Uma mesma serra.</em></h2>
         <div className="briefing-support">
           <p>Caminhe entre araucárias, veja a cidade do alto e termine deixando a paisagem passar pela janela.</p>
-          <span><RadarLogo variant="wordmark" decorative /> curadoria Radar</span>
+          <span><RadarLogo variant="wordmark" decorative /> sugestões da Radar</span>
         </div>
       </div>
       <div className="route-map">
@@ -546,7 +540,7 @@ function DestinationStory({ item, index, reducedMotion }) {
           </div>
           <a
             className="chapter-cta"
-            href={whatsappUrl(`Olá, Radar! Vi ${item.short} no roteiro de Campos do Jordão e quero saber mais sobre valores, hospedagem e como garantir minha viagem.`)}
+            href={whatsappUrl(`Olá, Radar! Vi ${item.short} nas sugestões da Radar para Campos do Jordão e quero saber mais sobre valores, hospedagem e como garantir minha viagem.`)}
             target="_blank"
             rel="noreferrer"
           >
@@ -706,16 +700,11 @@ function BoardingPass({ onOpen, reducedMotion }) {
             <div className="pass-brand"><RadarLogo variant="wordmark" decorative /><small>GUIA DE DESTINO</small></div>
             <div className="pass-destination">
               <div><small>DESTINO</small><strong>Campos do Jordão</strong><span>São Paulo, Brasil</span></div>
-              <div className="pass-count"><strong>03</strong><span>experiências</span></div>
+              <div className="pass-count"><strong>03</strong><span>sugestões</span></div>
             </div>
             <div className="pass-radar-list">
-              <small>ROTEIRO DE EXPERIÊNCIAS</small>
+              <small>ROTEIROS QUE NÓS INDICAMOS</small>
               {destinations.map((item) => <span key={item.id}><i>{item.number}</i><b>{item.short}</b></span>)}
-            </div>
-            <div className="pass-data">
-              <span><small>FORMATO</small><b>GUIA VISUAL</b></span>
-              <span><small>CONTEÚDO</small><b>3 EXPERIÊNCIAS</b></span>
-              <span><small>CURADORIA</small><b>RADAR</b></span>
             </div>
           </div>
           <div className="pass-stub">
@@ -732,10 +721,10 @@ function BoardingPass({ onOpen, reducedMotion }) {
           <span>Falar com a Radar no WhatsApp</span><span className="cta-icon"><WhatsAppIcon size={20} /></span>
         </a>
         <button className="magnetic-cta route-builder" onClick={onOpen}>
-          <span>Personalizar este roteiro</span><span className="cta-icon"><ArrowRight size={20} /></span>
+          <span>Montar meu roteiro</span><span className="cta-icon"><ArrowRight size={20} /></span>
         </button>
       </div>
-      <a className="boarding-note" href="#roteiro"><ChevronDown size={15} /> Rever as três experiências</a>
+      <a className="boarding-note" href="#roteiro"><ChevronDown size={15} /> Rever nossas sugestões</a>
     </section>
   )
 }
@@ -888,156 +877,10 @@ function WhatsAppFloat({ reducedMotion }) {
   )
 }
 
-const SOUND_ZONES = ['top', 'horto', 'morro', 'trem']
-const SOUND_LABELS = {
-  top: 'voo ligado',
-  horto: 'serra ligada',
-  morro: 'vista ligada',
-  trem: 'trem ligado',
-}
-
-// Cada trecho da viagem ganha sua própria paisagem sonora, sintetizada em tempo
-// real (sem áudio externo) e cruzada suavemente conforme a seção ativa no scroll.
-function createSoundscape(ctx) {
-  const master = ctx.createGain()
-  master.gain.value = 1
-  master.connect(ctx.destination)
-
-  const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate)
-  const noiseData = noiseBuffer.getChannelData(0)
-  for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1
-
-  const noiseLoop = (type, frequency, level, q = 0.6) => {
-    const source = ctx.createBufferSource()
-    source.buffer = noiseBuffer
-    source.loop = true
-    const filter = ctx.createBiquadFilter()
-    filter.type = type
-    filter.frequency.value = frequency
-    filter.Q.value = q
-    const output = ctx.createGain()
-    output.gain.value = level
-    source.connect(filter)
-    filter.connect(output)
-    source.start()
-    return { filter, output }
-  }
-
-  const zoneGains = {}
-  SOUND_ZONES.forEach((id) => {
-    const gain = ctx.createGain()
-    gain.gain.value = 0
-    gain.connect(master)
-    zoneGains[id] = gain
-  })
-
-  // top — vento fino de altitude visto pela janela do avião, com turbulência lenta
-  const heroWind = noiseLoop('bandpass', 1100, 0.05, 0.5)
-  const heroLfo = ctx.createOscillator()
-  heroLfo.frequency.value = 0.11
-  const heroLfoGain = ctx.createGain()
-  heroLfoGain.gain.value = 420
-  heroLfo.connect(heroLfoGain)
-  heroLfoGain.connect(heroWind.filter.frequency)
-  heroLfo.start()
-  heroWind.output.connect(zoneGains.top)
-
-  // horto — rumor grave da mata e da serra
-  const hortoOsc1 = ctx.createOscillator()
-  hortoOsc1.type = 'sine'
-  hortoOsc1.frequency.value = 54
-  const hortoOsc2 = ctx.createOscillator()
-  hortoOsc2.type = 'triangle'
-  hortoOsc2.frequency.value = 82
-  const hortoFilter = ctx.createBiquadFilter()
-  hortoFilter.type = 'lowpass'
-  hortoFilter.frequency.value = 180
-  const hortoLevel = ctx.createGain()
-  hortoLevel.gain.value = 0.02
-  hortoOsc1.connect(hortoFilter)
-  hortoOsc2.connect(hortoFilter)
-  hortoFilter.connect(hortoLevel)
-  hortoLevel.connect(zoneGains.horto)
-  hortoOsc1.start()
-  hortoOsc2.start()
-
-  // morro — ar aberto do alto com o zunido do cabo do teleférico
-  const morroWind = noiseLoop('highpass', 1000, 0.045, 0.5)
-  morroWind.output.connect(zoneGains.morro)
-  const cableOsc = ctx.createOscillator()
-  cableOsc.type = 'sine'
-  cableOsc.frequency.value = 196
-  const cableGain = ctx.createGain()
-  cableGain.gain.value = 0.05
-  const cableTremolo = ctx.createOscillator()
-  cableTremolo.frequency.value = 5.2
-  const cableTremoloGain = ctx.createGain()
-  cableTremoloGain.gain.value = 0.015
-  cableTremolo.connect(cableTremoloGain)
-  cableTremoloGain.connect(cableGain.gain)
-  cableOsc.connect(cableGain)
-  cableGain.connect(zoneGains.morro)
-  cableOsc.start()
-  cableTremolo.start()
-
-  // trem — ronco do motor e o compasso do trilho (clack periódico)
-  const engineOsc = ctx.createOscillator()
-  engineOsc.type = 'sawtooth'
-  engineOsc.frequency.value = 38
-  const engineFilter = ctx.createBiquadFilter()
-  engineFilter.type = 'lowpass'
-  engineFilter.frequency.value = 110
-  const engineGain = ctx.createGain()
-  engineGain.gain.value = 0.07
-  engineOsc.connect(engineFilter)
-  engineFilter.connect(engineGain)
-  engineGain.connect(zoneGains.trem)
-  engineOsc.start()
-
-  let clackTimeout = null
-  const scheduleClack = () => {
-    const now = ctx.currentTime
-    const source = ctx.createBufferSource()
-    source.buffer = noiseBuffer
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'bandpass'
-    filter.frequency.value = 1500
-    filter.Q.value = 2.2
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.linearRampToValueAtTime(0.22, now + 0.006)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14)
-    source.connect(filter)
-    filter.connect(gain)
-    gain.connect(zoneGains.trem)
-    source.start(now)
-    source.stop(now + 0.16)
-    clackTimeout = setTimeout(scheduleClack, 420 + Math.random() * 60)
-  }
-  scheduleClack()
-
-  const setZone = (zoneId) => {
-    const now = ctx.currentTime
-    SOUND_ZONES.forEach((id) => {
-      const gain = zoneGains[id]
-      gain.gain.cancelScheduledValues(now)
-      gain.gain.setTargetAtTime(id === zoneId ? 1 : 0, now, 0.8)
-    })
-  }
-
-  const stop = () => clearTimeout(clackTimeout)
-
-  return { setZone, stop }
-}
 
 function App() {
   const [loaded, setLoaded] = useState(false)
-  const [soundOn, setSoundOn] = useState(false)
-  const [activeZone, setActiveZone] = useState('horto')
   const [modalOpen, setModalOpen] = useState(false)
-  const audio = useRef(null)
-  const soundscape = useRef(null)
-  const zoneTriggers = useRef([])
   const navProgress = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
 
@@ -1093,64 +936,11 @@ function App() {
     })
   }, [loaded])
 
-  const stopSound = () => {
-    zoneTriggers.current.forEach((trigger) => trigger.kill())
-    zoneTriggers.current = []
-    soundscape.current?.stop()
-    audio.current?.close()
-    audio.current = null
-    soundscape.current = null
-  }
-
-  useEffect(() => () => stopSound(), [])
-
-  const toggleSound = () => {
-    if (soundOn) {
-      stopSound()
-      setSoundOn(false)
-      return
-    }
-
-    const AudioContext = window.AudioContext || window.webkitAudioContext
-    if (!AudioContext) return
-    const ctx = new AudioContext()
-    const engine = createSoundscape(ctx)
-    audio.current = ctx
-    soundscape.current = engine
-
-    const centerY = window.innerHeight / 2
-    const current = SOUND_ZONES.find((id) => {
-      const el = document.getElementById(id)
-      if (!el) return false
-      const rect = el.getBoundingClientRect()
-      return rect.top <= centerY && rect.bottom >= centerY
-    }) || 'top'
-    setActiveZone(current)
-    engine.setZone(current)
-
-    zoneTriggers.current = SOUND_ZONES.map((id) => ScrollTrigger.create({
-      trigger: `#${id}`,
-      start: 'top center',
-      end: 'bottom center',
-      onToggle: (self) => {
-        if (!self.isActive) return
-        setActiveZone(id)
-        engine.setZone(id)
-      },
-    }))
-
-    setSoundOn(true)
-  }
 
   return (
     <>
       {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
-      <FlightNav
-        progressRef={navProgress}
-        soundOn={soundOn}
-        soundLabel={soundOn ? SOUND_LABELS[activeZone] : 'ouvir a viagem'}
-        toggleSound={toggleSound}
-      />
+      <FlightNav progressRef={navProgress} />
       <main>
         <AirplaneIntro reducedMotion={reducedMotion} />
         <RouteBriefing reducedMotion={reducedMotion} />

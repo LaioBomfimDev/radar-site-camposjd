@@ -186,7 +186,6 @@ a {
   gap: 5px;
 }
 
-.sound-button,
 .route-button {
   display: inline-flex;
   align-items: center;
@@ -202,15 +201,6 @@ a {
   font-size: 0.66rem;
   letter-spacing: 0.06em;
   transition: background 0.25s ease, color 0.25s ease;
-}
-
-.sound-button span {
-  display: none;
-}
-
-.sound-button:hover,
-.sound-button:focus-visible {
-  background: rgba(255, 255, 255, 0.16);
 }
 
 .route-button {
@@ -1478,7 +1468,7 @@ a {
 }
 
 .pass-route > div:last-child { text-align: right; }
-.pass-route small, .pass-data small { display: block; color: #737a75; font: 400 .47rem 'DM Mono', monospace; letter-spacing: .08em; }
+.pass-route small { display: block; color: #737a75; font: 400 .47rem 'DM Mono', monospace; letter-spacing: .08em; }
 .pass-route strong { display: block; margin: 3px 0; font-size: clamp(2.1rem, 10vw, 4.5rem); line-height: 1; letter-spacing: -.08em; }
 .pass-route span { font-size: .56rem; color: #646b66; }
 
@@ -1591,16 +1581,6 @@ a {
   font: normal .43rem 'DM Mono', monospace;
 }
 
-.pass-data {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  padding-top: 17px;
-  border-top: 1px solid rgba(7,18,14,.18);
-}
-
-.pass-data > span:nth-child(2) { text-align: center; }
-.pass-data > span:last-child { text-align: right; }
-.pass-data b { display: block; margin-top: 5px; font: 500 .63rem 'DM Mono', monospace; }
 .pass-stub {
   display: flex;
   align-items: center;
@@ -1915,8 +1895,7 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
 
 @media (min-width: 720px) {
   .flight-nav { top: 18px; left: 20px; right: 20px; padding-left: 16px; }
-  .sound-button span { display: inline; }
-  .route-button, .sound-button { padding: 0 16px; }
+  .route-button { padding: 0 16px; }
   .boarding-copy { bottom: 42px; }
   .boarding-copy h2 { font-size: 4rem; }
   .flight-hero-copy { padding: 110px 6vw 5vh; }
