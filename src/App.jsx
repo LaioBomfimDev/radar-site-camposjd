@@ -177,8 +177,24 @@ function Preloader({ onComplete }) {
 }
 
 function FlightNav({ progressRef }) {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const syncVisibility = (self) => setVisible(self.scroll() >= self.start)
+    const trigger = ScrollTrigger.create({
+      trigger: '#roteiro',
+      start: 'top top',
+      end: 'max',
+      onEnter: syncVisibility,
+      onLeaveBack: syncVisibility,
+      onRefresh: syncVisibility,
+    })
+    syncVisibility(trigger)
+    return () => trigger.kill()
+  }, [])
+
   return (
-    <header className="flight-nav" aria-label="Navegação principal">
+    <header className={`flight-nav${visible ? ' is-visible' : ''}`} aria-label="Navegação principal" aria-hidden={!visible} inert={!visible}>
       <a className="brand" href="#top" aria-label="Radar Viagem e Turismo — início">
         <span className="brand-orbit"><Plane size={13} fill="currentColor" /></span>
         <RadarLogo variant="wordmark" className="nav-radar-logo" eager decorative />
@@ -271,7 +287,10 @@ function AirplaneIntro({ reducedMotion }) {
             </h1>
             <div className="hero-meta">
               <p>Suba a serra.<br /><strong>Deixe a pressa lá embaixo.</strong></p>
-              <div className="altimeter"><span>SUGESTÕES</span><strong className="altitude-value">0</strong><small>da Radar</small></div>
+              <div className="hero-suggestions">
+                <div className="altimeter"><strong className="altitude-value">0</strong><span>sugestões<br />da Radar</span></div>
+                <p>E muito mais para conhecer.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -509,7 +528,43 @@ function DestinationStory({ item, index, reducedMotion }) {
         {index === 2 && (
           <div className="train-scene" aria-hidden="true">
             <div className="track-lines"><i /><i /></div>
-            <div className="mini-train"><TrainFront size={28} /><span /><span /></div>
+            <div className="mini-train">
+              <svg viewBox="0 0 244 64" fill="none" focusable="false">
+                {/* Two passenger carriages, coupled to the right-facing locomotive. */}
+                <path d="M65 46H81M143 46H159" stroke="#c4c8b4" strokeWidth="4" />
+                {[0, 78].map((x) => (
+                  <g key={x} transform={`translate(${x} 0)`}>
+                    <rect x="3" y="16" width="65" height="35" rx="5" fill="currentColor" />
+                    <path d="M3 19Q3 12 10 12H61Q68 12 68 19Z" fill="#263c32" />
+                    {[10, 28, 46].map((windowX) => (
+                      <g key={windowX}>
+                        <rect x={windowX} y="23" width="12" height="14" rx="3" fill="#173a38" />
+                        <path d={`M${windowX + 2} 25h7l-7 8Z`} fill="#aadbd0" opacity=".45" />
+                      </g>
+                    ))}
+                    <path d="M5 42H66" stroke="#fff4bd" strokeWidth="2" />
+                    <rect x="7" y="49" width="57" height="5" rx="2" fill="#263c32" />
+                  </g>
+                ))}
+                <path d="M159 49V20Q159 16 163 16H190Q194 16 194 20V31H223Q231 31 232 40L234 50Z" fill="currentColor" />
+                <rect x="155" y="11" width="43" height="6" rx="3" fill="#263c32" />
+                <rect x="165" y="22" width="20" height="17" rx="3" fill="#173a38" />
+                <path d="M168 25H182L168 36Z" fill="#aadbd0" opacity=".45" />
+                <path d="M213 31V19H222V31" fill="#263c32" />
+                <rect x="210" y="16" width="15" height="5" rx="2" fill="#263c32" />
+                <path d="M197 35V45M204 35V45M164 44H188" stroke="#fff4bd" strokeWidth="2" />
+                <rect x="230" y="35" width="5" height="8" rx="2" fill="#fff4bd" />
+                <path d="M157 49H232L240 55H157Z" fill="#263c32" />
+                {[17, 54, 95, 132, 173, 199, 222].map((x) => (
+                  <g key={x}>
+                    <circle cx={x} cy="54" r="7" fill="#10251e" />
+                    <circle cx={x} cy="54" r="4" stroke="#adbfa6" strokeWidth="2" />
+                    <circle cx={x} cy="54" r="1.5" fill="currentColor" />
+                  </g>
+                ))}
+                <path d="M173 54H199" stroke="#d7ddc8" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
           </div>
         )}
 

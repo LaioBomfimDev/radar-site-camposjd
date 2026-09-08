@@ -141,12 +141,16 @@ a {
   -webkit-backdrop-filter: blur(18px) saturate(125%);
   transform: translateY(-90px);
   opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transition: transform 0.8s cubic-bezier(.2,.75,.2,1), opacity 0.8s ease;
 }
 
-.ready .flight-nav {
+.flight-nav.is-visible {
   transform: translateY(0);
   opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .brand {
@@ -528,6 +532,8 @@ a {
 
 .hero-meta {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
   align-items: flex-end;
   justify-content: space-between;
   margin-top: 24px;
@@ -549,12 +555,16 @@ a {
 
 .altimeter {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
   color: var(--acid);
   font: 400 0.65rem 'DM Mono', monospace;
 }
 
-.altimeter span { margin-right: 8px; color: rgba(255, 255, 255, 0.6); }
+.hero-suggestions { margin-left: auto; text-align: right; }
+.hero-suggestions > p { font-size: .65rem; }
+.altimeter span { color: rgba(255, 255, 255, 0.8); text-align: left; line-height: 1.4; }
 .altimeter strong { font-size: 1.8rem; font-weight: 400; }
 .altimeter small { margin-left: 3px; }
 
@@ -1078,23 +1088,15 @@ a {
   position: absolute;
   bottom: 18%;
   left: 0;
-  display: flex;
-  align-items: center;
-  width: 126px;
-  height: 54px;
-  padding: 0 10px;
-  color: var(--ink);
-  border-radius: 12px 17px 8px 8px;
-  background: var(--accent);
-  box-shadow: 0 15px 30px rgba(0,0,0,.35);
+  width: 175px;
+  height: 46px;
+  color: var(--accent);
 }
 
-.mini-train span {
-  width: 24px;
-  height: 24px;
-  margin-left: 5px;
-  border-radius: 5px;
-  background: rgba(6,19,14,.8);
+.mini-train svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .story-transition {
