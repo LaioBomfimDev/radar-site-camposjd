@@ -256,20 +256,17 @@ a {
 }
 
 .sky-window {
-  /* O conteúdo (vídeo, cor do céu) é sempre do tamanho da tela inteira e
-     nunca redimensiona — só a área visível cresce, via clip-path. Antes,
-     esta caixa era animada em width/height: isso força layout+repaint do
-     vídeo a cada frame do scroll (caro) e, como a .window-rim não
-     acompanhava esse crescimento, ela ficava pequena e sobreposta às
-     nuvens no meio da transição. Com clip-path nada aqui dentro
-     redimensiona — só a "vidraça" que revela mais da mesma cena parada. */
+  --window-reveal: 0;
+  --window-width: min(68vw, 360px);
+  --window-height: min(55svh, 540px);
+  /* Keep the first paint and scroll animation on the same responsive geometry. */
   position: absolute;
   inset: 0;
   overflow: hidden;
   clip-path: inset(
-    calc((100% - min(55svh, 540px)) / 2)
-    calc((100% - min(68vw, 360px)) / 2)
-    round 45%
+    calc((100% - var(--window-height)) / 2 * (1 - var(--window-reveal)))
+    calc((100% - var(--window-width)) / 2 * (1 - var(--window-reveal)))
+    round calc(45% * (1 - var(--window-reveal)))
   );
   will-change: clip-path;
 }
@@ -1965,11 +1962,8 @@ footer > a:last-child { display: inline-flex; align-items: center; gap: 7px; col
 @media (min-width: 1100px) {
   .flight-nav { left: 32px; right: 32px; }
   .sky-window {
-    clip-path: inset(
-      calc((100% - min(58vh, 610px)) / 2)
-      calc((100% - min(26vw, 400px)) / 2)
-      round 45%
-    );
+    --window-width: min(26vw, 400px);
+    --window-height: min(58vh, 610px);
   }
   .cabin-shell::before, .cabin-shell::after { width: 31vw; }
   .cabin-ceiling { width: 60%; }

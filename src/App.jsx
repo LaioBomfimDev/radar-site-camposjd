@@ -223,13 +223,9 @@ function AirplaneIntro({ reducedMotion }) {
         },
       })
       tl.to('.boarding-copy', { y: 45, opacity: 0, duration: 0.42, ease: 'power2.in' }, 0)
-        // O "buraco" cresce via clip-path, não width/height: o vídeo é sempre
-        // do tamanho da tela inteira e nunca redimensiona, então nada precisa
-        // recalcular/repintar a cada frame do scroll (mais leve) e a
-        // .window-rim, que não acompanhava o crescimento da janela e ficava
-        // flutuando pequena e sobreposta às nuvens no meio da transição, some
-        // certinho junto com o fade da cabine em vez disso.
-        .to('.sky-window', { clipPath: 'inset(0% round 0%)', duration: 1.6, ease: 'none' }, 0)
+        // Animate a number, not a clip-path string containing calc()/min().
+        // CSS resolves the responsive opening; reveal=0 matches the first paint.
+        .fromTo('.sky-window', { '--window-reveal': 0 }, { '--window-reveal': 1, duration: 1.6, ease: 'none' }, 0)
         .to('.cabin-shell', { opacity: 0, scale: 1.1, duration: 1.6, ease: 'none' }, 0)
         .to('.window-glint', { xPercent: 190, duration: 1.6, ease: 'none' }, 0)
         .fromTo('.flight-hero-copy', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out' }, 1.55)
