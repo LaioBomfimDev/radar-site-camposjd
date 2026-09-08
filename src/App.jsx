@@ -214,20 +214,32 @@ function AirplaneIntro({ reducedMotion }) {
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       if (reducedMotion) return
+      const sky = root.current.querySelector('.sky-window')
+      const initialClip = () => {
+        const width = sky.clientWidth
+        const height = sky.clientHeight
+        const desktop = window.matchMedia('(min-width: 1100px)').matches
+        const openingWidth = Math.min(window.innerWidth * (desktop ? 0.26 : 0.68), desktop ? 400 : 360)
+        const openingHeight = Math.min((desktop ? window.innerHeight : height) * (desktop ? 0.58 : 0.55), desktop ? 610 : 540)
+        const x = Math.max(0, (width - openingWidth) / 2)
+        const y = Math.max(0, (height - openingHeight) / 2)
+        return `inset(${y}px ${x}px ${y}px ${x}px round ${width * 0.45}px / ${height * 0.45}px)`
+      }
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 1,
+          scrub: 0.45,
+          invalidateOnRefresh: true,
         },
       })
       tl.to('.boarding-copy', { y: 45, opacity: 0, duration: 0.42, ease: 'power2.in' }, 0)
-        // Animate a number, not a clip-path string containing calc()/min().
-        // CSS resolves the responsive opening; reveal=0 matches the first paint.
-        .fromTo('.sky-window', { '--window-reveal': 0 }, { '--window-reveal': 1, duration: 1.6, ease: 'none' }, 0)
-        .to('.cabin-shell', { opacity: 0, scale: 1.1, duration: 1.6, ease: 'none' }, 0)
-        .to('.window-glint', { xPercent: 190, duration: 1.6, ease: 'none' }, 0)
+        // Resolve responsive geometry only on setup/refresh. Matching numeric
+        // clip syntax avoids calc interpolation and inherited CSS-variable updates.
+        .to('.window-rim', { autoAlpha: 0, duration: 0.12, ease: 'none' }, 0)
+        .fromTo(sky, { clipPath: initialClip }, { clipPath: 'inset(0px 0px 0px 0px round 0px / 0px)', duration: 1.6, ease: 'none' }, 0.12)
+        .to('.cabin-shell', { autoAlpha: 0, duration: 0.5, ease: 'none' }, 0.12)
         .fromTo('.flight-hero-copy', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out' }, 1.55)
         .fromTo('.hero-word', { yPercent: 110 }, { yPercent: 0, stagger: 0.12, duration: 0.9, ease: 'power4.out' }, 1.5)
         .to('.altitude-value', { innerText: 3, snap: { innerText: 1 }, duration: 1.6, ease: 'none' }, 0)
