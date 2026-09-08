@@ -555,7 +555,6 @@ function DestinationStory({ item, index, reducedMotion }) {
           <span className="card-glow" />
         </TiltCard>
 
-        <div className="swipe-hint"><span>TOQUE NOS PONTOS</span><i /></div>
       </div>
     </section>
   )
@@ -838,13 +837,13 @@ function WhatsAppFloat({ reducedMotion }) {
       window.clearTimeout(hideTimer.current)
       setVisible(true)
       setCycle((current) => current + 1)
-      hideTimer.current = window.setTimeout(() => setVisible(false), 9000)
+      hideTimer.current = window.setTimeout(() => setVisible(false), 4000)
     }
 
     const initial = window.setTimeout(() => {
       showMessage()
-      interval = window.setInterval(showMessage, 20000)
-    }, 3500)
+      interval = window.setInterval(showMessage, 25000)
+    }, 25000)
 
     return () => {
       window.clearTimeout(initial)
@@ -882,7 +881,7 @@ function WhatsAppFloat({ reducedMotion }) {
         </div>
       )}
       <a className="whatsapp-button" href={generalWhatsappUrl} target="_blank" rel="noreferrer" aria-label="Falar com a Radar pelo WhatsApp">
-        <WhatsAppIcon size={26} />
+        <WhatsAppIcon size={40} />
         <span>WhatsApp</span>
       </a>
     </aside>
