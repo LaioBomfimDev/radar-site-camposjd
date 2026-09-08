@@ -1000,10 +1000,10 @@ a {
 .cable-scene {
   position: absolute;
   z-index: 3;
-  top: 20%;
+  top: 16%;
   right: 16px;
   width: var(--cable-width);
-  height: clamp(130px, 24svh, 240px);
+  height: clamp(150px, 32svh, 360px);
   pointer-events: none;
 }
 
@@ -1089,7 +1089,7 @@ a {
 .mini-train {
   position: absolute;
   bottom: 18%;
-  left: 12%;
+  left: 0;
   display: flex;
   align-items: center;
   width: 126px;
@@ -1187,6 +1187,8 @@ a {
 }
 
 .transition-rule {
+  --route-progress: 0;
+  --orb-size: 34px;
   position: relative;
   height: 42px;
   border-bottom: 1px dashed rgba(255,255,255,.2);
@@ -1196,7 +1198,7 @@ a {
   position: absolute;
   bottom: -1px;
   left: 0;
-  width: 100%;
+  width: calc(var(--orb-size) / 2 + (100% - var(--orb-size)) * var(--route-progress));
   height: 1px;
   background: var(--acid);
 }
@@ -1204,11 +1206,11 @@ a {
 .transition-orb {
   position: absolute;
   bottom: -17px;
-  left: 3%;
+  left: calc((100% - var(--orb-size)) * var(--route-progress));
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: var(--orb-size);
+  height: var(--orb-size);
   color: var(--ink);
   border-radius: 50%;
   background: var(--acid);

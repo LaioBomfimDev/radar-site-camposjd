@@ -451,14 +451,16 @@ function DestinationStory({ item, index, reducedMotion }) {
           x: () => cable.clientWidth - gondola.offsetWidth,
           y: 28,
           ease: 'none',
-          scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: 1, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1, invalidateOnRefresh: true },
         })
       }
       if (index === 2) {
-        gsap.fromTo('.mini-train', { xPercent: -140 }, {
-          xPercent: 130,
+        const tracks = root.current.querySelector('.train-scene')
+        const train = tracks.querySelector('.mini-train')
+        gsap.fromTo(train, { x: 0 }, {
+          x: () => Math.max(0, tracks.clientWidth - train.offsetWidth),
           ease: 'none',
-          scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: 1 },
+          scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1, invalidateOnRefresh: true },
         })
       }
     }, root)
@@ -560,17 +562,11 @@ function StoryTransition({ number, kicker, lines, icon: Icon, reducedMotion }) {
         ease: 'power3.out',
         scrollTrigger: { trigger: root.current, start: 'top 55%', end: 'center 20%', scrub: 0.7 },
       })
-      gsap.from('.transition-rule-fill', {
-        scaleX: 0,
-        transformOrigin: 'left center',
+      // The fill endpoint and icon center share one progress value and track.
+      gsap.fromTo('.transition-rule', { '--route-progress': 0 }, {
+        '--route-progress': 1,
         ease: 'none',
         scrollTrigger: { trigger: root.current, start: 'top 60%', end: 'bottom 15%', scrub: 1 },
-      })
-      gsap.fromTo('.transition-orb', { x: 0, rotate: -18 }, {
-        x: () => Math.max(0, root.current.clientWidth - 72),
-        rotate: 18,
-        ease: 'none',
-        scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', scrub: 1, invalidateOnRefresh: true },
       })
     }, root)
     return () => ctx.revert()
