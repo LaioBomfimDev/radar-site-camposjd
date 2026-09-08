@@ -221,7 +221,6 @@ function AirplaneIntro({ reducedMotion }) {
         .to('.window-glint', { xPercent: 190, duration: 1.6, ease: 'none' }, 0)
         .fromTo('.flight-hero-copy', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: 'power2.out' }, 1.55)
         .fromTo('.hero-word', { yPercent: 110 }, { yPercent: 0, stagger: 0.12, duration: 0.9, ease: 'power4.out' }, 1.5)
-        .to('.wing', { xPercent: 7, yPercent: -6, rotate: -2, duration: 1.6, ease: 'none' }, 0)
         .to('.altitude-value', { innerText: 3, snap: { innerText: 1 }, duration: 1.6, ease: 'none' }, 0)
     }, root)
     return () => ctx.revert()
@@ -245,10 +244,6 @@ function AirplaneIntro({ reducedMotion }) {
             <source src="https://upload.wikimedia.org/wikipedia/commons/5/54/Clouds_Time_Lapse.webm" type="video/webm" />
           </video>
           <div className="sky-color" />
-          <svg className="wing" viewBox="0 0 820 250" aria-hidden="true">
-            <path d="M38 188C193 161 335 142 466 127L711 33c20-8 32-3 38 9l-116 101 145 16c19 2 21 18 3 24l-187 17-97 31-31-19-302 24Z" />
-            <path className="wing-line" d="M112 190 511 145l196-83M493 146l90 49" />
-          </svg>
           <div className="window-glint" />
           <div className="flight-hero-copy">
             <div className="hero-provider">

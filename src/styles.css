@@ -287,23 +287,6 @@ a {
   background: linear-gradient(180deg, rgba(0, 93, 118, 0.08), rgba(2, 18, 15, 0.15) 70%, rgba(3, 13, 9, 0.55));
 }
 
-.wing {
-  position: absolute;
-  z-index: 2;
-  right: -16%;
-  bottom: 12%;
-  width: min(78vw, 850px);
-  filter: drop-shadow(0 25px 22px rgba(0, 0, 0, 0.24));
-  fill: rgba(224, 229, 226, 0.94);
-  transform: rotate(3deg);
-}
-
-.wing-line {
-  fill: none;
-  stroke: rgba(28, 46, 41, 0.5);
-  stroke-width: 2;
-}
-
 .window-glint {
   position: absolute;
   z-index: 5;
