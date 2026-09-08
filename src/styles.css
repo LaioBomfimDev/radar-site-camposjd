@@ -988,7 +988,9 @@ a {
 
 .cable-scene {
   position: absolute;
-  z-index: 3;
+  /* Acima do texto (z-index 5), para a gôndola cruzar por cima do título em
+     vez de sumir atrás dele durante o trecho diagonal da subida. */
+  z-index: 6;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -1046,10 +1048,10 @@ a {
 .train-scene {
   position: absolute;
   z-index: 4;
-  top: 36%;
+  top: 9%;
   left: 0;
   width: 100%;
-  height: 22%;
+  height: 10%;
   pointer-events: none;
 }
 
