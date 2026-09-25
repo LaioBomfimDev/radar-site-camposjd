@@ -106,8 +106,20 @@ const destinations = [
 ]
 
 const radarAssets = {
-  full: { src: '/media/radar-logo.webp', width: 920, height: 286 },
-  wordmark: { src: '/media/radar-wordmark.webp', width: 620, height: 121 },
+  full: {
+    src: '/media/radar-logo.webp',
+    srcSet: '/media/radar-logo-460.webp 460w, /media/radar-logo.webp 920w',
+    sizes: '(max-width: 719px) 72vw, 390px',
+    width: 920,
+    height: 286,
+  },
+  wordmark: {
+    src: '/media/radar-wordmark.webp',
+    srcSet: '/media/radar-wordmark-240.webp 240w, /media/radar-wordmark.webp 620w',
+    sizes: '(max-width: 719px) 100px, 140px',
+    width: 620,
+    height: 121,
+  },
 }
 
 function RadarLogo({ variant = 'wordmark', className = '', eager = false, decorative = false }) {
@@ -117,6 +129,8 @@ function RadarLogo({ variant = 'wordmark', className = '', eager = false, decora
     <span className={`radar-logo radar-logo-${variant} ${className}`.trim()}>
       <img
         src={asset.src}
+        srcSet={asset.srcSet}
+        sizes={asset.sizes}
         width={asset.width}
         height={asset.height}
         alt={decorative ? '' : 'Radar Viagem e Turismo'}
@@ -149,16 +163,33 @@ function usePrefersReducedMotion() {
   return reduced
 }
 
+function useNearViewport(ref, enabled, rootMargin = '125% 0px') {
+  const [nearby, setNearby] = useState(false)
+
+  useEffect(() => {
+    if (!enabled || nearby || !ref.current) return undefined
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      setNearby(true)
+      observer.disconnect()
+    }, { rootMargin })
+    observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [enabled, nearby, ref, rootMargin])
+
+  return enabled && nearby
+}
+
 function Preloader({ onComplete }) {
   const root = useRef(null)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ onComplete })
-      tl.from('.loader-plane', { x: -90, opacity: 0, duration: 0.7, ease: 'power3.out' })
-        .to('.loader-line-fill', { scaleX: 1, duration: 1.1, ease: 'power2.inOut' }, '<0.1')
-        .to('.loader-copy span', { yPercent: -110, duration: 0.5, ease: 'power3.inOut' })
-        .to(root.current, { yPercent: -102, duration: 0.9, ease: 'expo.inOut' }, '-=0.15')
+      tl.from('.loader-plane', { x: -70, opacity: 0, duration: 0.35, ease: 'power3.out' })
+        .to('.loader-line-fill', { scaleX: 1, duration: 0.55, ease: 'power2.inOut' }, 0.05)
+        .to('.loader-copy span', { yPercent: -110, duration: 0.25, ease: 'power3.inOut' }, 0.55)
+        .to(root.current, { yPercent: -102, duration: 0.48, ease: 'expo.inOut' }, 0.68)
     }, root)
     return () => ctx.revert()
   }, [onComplete])
@@ -176,10 +207,11 @@ function Preloader({ onComplete }) {
   )
 }
 
-function FlightNav({ progressRef }) {
+function FlightNav({ progressRef, active }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
+    if (!active) return undefined
     const syncVisibility = (self) => setVisible(self.scroll() >= self.start)
     const trigger = ScrollTrigger.create({
       trigger: '#roteiro',
@@ -191,7 +223,7 @@ function FlightNav({ progressRef }) {
     })
     syncVisibility(trigger)
     return () => trigger.kill()
-  }, [])
+  }, [active])
 
   return (
     <header className={`flight-nav${visible ? ' is-visible' : ''}`} aria-label="Navegação principal" aria-hidden={!visible} inert={!visible}>
@@ -207,25 +239,25 @@ function FlightNav({ progressRef }) {
   )
 }
 
-function AirplaneIntro({ reducedMotion }) {
+function AirplaneIntro({ reducedMotion, active }) {
   const root = useRef(null)
   const video = useRef(null)
 
   useEffect(() => {
-    if (!video.current || reducedMotion) return
+    if (!active || !video.current || reducedMotion) return undefined
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) video.current?.play().catch(() => {})
       else video.current?.pause()
     }, { threshold: 0.1 })
     observer.observe(video.current)
     return () => observer.disconnect()
-  }, [reducedMotion])
+  }, [active, reducedMotion])
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (reducedMotion) return
+      if (!active || reducedMotion) return
       const sky = root.current.querySelector('.sky-window')
-      const initialClip = () => {
+      const initialClip = (() => {
         const width = sky.clientWidth
         const height = sky.clientHeight
         const desktop = window.matchMedia('(min-width: 1100px)').matches
@@ -234,7 +266,7 @@ function AirplaneIntro({ reducedMotion }) {
         const x = Math.max(0, (width - openingWidth) / 2)
         const y = Math.max(0, (height - openingHeight) / 2)
         return `inset(${y}px ${x}px ${y}px ${x}px round ${width * 0.45}px / ${height * 0.45}px)`
-      }
+      })()
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: root.current,
@@ -255,7 +287,7 @@ function AirplaneIntro({ reducedMotion }) {
         .to('.altitude-value', { innerText: 3, snap: { innerText: 1 }, duration: 1.6, ease: 'none' }, 0)
     }, root)
     return () => ctx.revert()
-  }, [reducedMotion])
+  }, [active, reducedMotion])
 
   return (
     <section className="takeoff" id="top" ref={root} aria-label="Início da viagem">
@@ -268,10 +300,10 @@ function AirplaneIntro({ reducedMotion }) {
             muted
             loop
             playsInline
-            preload="metadata"
-            aria-label="Vista real da janela do avião, sobre nuvens e litoral, na volta para casa"
+            preload="none"
+            aria-hidden="true"
           >
-            <source src="/media/janela-real.webm" type="video/webm" />
+            <source src="/media/janela-real-silent.webm" type="video/webm" />
           </video>
           <div className="sky-color" />
           <div className="window-glint" />
@@ -315,12 +347,13 @@ function AirplaneIntro({ reducedMotion }) {
   )
 }
 
-function RouteBriefing({ reducedMotion }) {
+function RouteBriefing({ reducedMotion, active }) {
   const root = useRef(null)
+  const animationActive = useNearViewport(root, active)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (reducedMotion) return
+      if (!animationActive || reducedMotion) return
       gsap.from('.brief-line', {
         scaleX: 0,
         transformOrigin: 'left center',
@@ -342,7 +375,7 @@ function RouteBriefing({ reducedMotion }) {
       })
     }, root)
     return () => ctx.revert()
-  }, [reducedMotion])
+  }, [animationActive, reducedMotion])
 
   return (
     <section className="briefing" id="roteiro" ref={root} aria-labelledby="briefing-title">
@@ -426,14 +459,15 @@ function TiltCard({ children, className = '', reducedMotion = false }) {
   )
 }
 
-function DestinationStory({ item, index, reducedMotion }) {
+function DestinationStory({ item, index, reducedMotion, active }) {
   const root = useRef(null)
   const [activeFact, setActiveFact] = useState(0)
   const Icon = item.icon
+  const animationActive = useNearViewport(root, active)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (reducedMotion) return
+      if (!animationActive || reducedMotion) return
       const stage = root.current.querySelector('.destination-stage')
       const image = root.current.querySelector('.destination-image')
       const title = root.current.querySelector('.destination-title')
@@ -469,35 +503,38 @@ function DestinationStory({ item, index, reducedMotion }) {
       if (index === 1) {
         const cable = root.current.querySelector('.cable-scene')
         const gondola = cable.querySelector('.gondola')
+        const startY = cable.clientHeight - gondola.offsetHeight
+        const endX = cable.clientWidth - gondola.offsetWidth
         gsap.fromTo(gondola, {
           x: 0,
-          y: () => cable.clientHeight - gondola.offsetHeight,
+          y: startY,
         }, {
-          x: () => cable.clientWidth - gondola.offsetWidth,
+          x: endX,
           y: 28,
           ease: 'none',
-          scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1 },
         })
       }
       if (index === 2) {
         const tracks = root.current.querySelector('.train-scene')
         const train = tracks.querySelector('.mini-train')
+        const endX = Math.max(0, tracks.clientWidth - train.offsetWidth)
         gsap.fromTo(train, { x: 0 }, {
-          x: () => Math.max(0, tracks.clientWidth - train.offsetWidth),
+          x: endX,
           ease: 'none',
-          scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: 1 },
         })
       }
     }, root)
     return () => ctx.revert()
-  }, [index, reducedMotion])
+  }, [animationActive, index, reducedMotion])
 
   useEffect(() => {
-    if (reducedMotion) return
+    if (!animationActive || reducedMotion) return
     const next = root.current?.querySelector('.fact-copy')
     if (!next) return
     gsap.fromTo(next, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' })
-  }, [activeFact, reducedMotion])
+  }, [animationActive, activeFact, reducedMotion])
 
   return (
     <section className={`destination destination-${index + 1}`} id={item.id} ref={root} style={{ '--accent': item.accent }}>
@@ -505,11 +542,13 @@ function DestinationStory({ item, index, reducedMotion }) {
         <img
           className="destination-image"
           src={item.image}
+          srcSet={`${item.image.replace('.webp', '-1080.webp')} 1080w, ${item.image} 1800w`}
+          sizes="100vw"
           alt={item.alt}
           loading="lazy"
           decoding="async"
-          width="1600"
-          height="1100"
+          width="1800"
+          height="1350"
         />
         <div className="destination-grade" />
         <div className="destination-index">{item.number}</div>
@@ -609,12 +648,13 @@ function DestinationStory({ item, index, reducedMotion }) {
   )
 }
 
-function StoryTransition({ number, kicker, lines, icon: Icon, reducedMotion }) {
+function StoryTransition({ number, kicker, lines, icon: Icon, reducedMotion, active }) {
   const root = useRef(null)
+  const animationActive = useNearViewport(root, active)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (reducedMotion) return
+      if (!animationActive || reducedMotion) return
       gsap.from('.transition-word', {
         yPercent: 115,
         rotate: 2,
@@ -630,7 +670,7 @@ function StoryTransition({ number, kicker, lines, icon: Icon, reducedMotion }) {
       })
     }, root)
     return () => ctx.revert()
-  }, [reducedMotion])
+  }, [animationActive, reducedMotion])
 
   return (
     <section className={`story-transition transition-${number}`} ref={root} aria-label={`Transição para a parada ${number}`}>
@@ -649,21 +689,23 @@ function StoryTransition({ number, kicker, lines, icon: Icon, reducedMotion }) {
   )
 }
 
-function MemoryStrip({ reducedMotion }) {
+function MemoryStrip({ reducedMotion, active }) {
   const root = useRef(null)
+  const animationActive = useNearViewport(root, active)
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (reducedMotion) return
+      if (!animationActive || reducedMotion) return
+      const track = root.current.querySelector('.memory-track')
+      const endX = -(track.scrollWidth - window.innerWidth + 48)
       gsap.to('.memory-track', {
-        x: () => -(root.current.querySelector('.memory-track').scrollWidth - window.innerWidth + 48),
+        x: endX,
         ease: 'none',
         scrollTrigger: {
           trigger: root.current,
           start: 'top top',
           end: 'bottom bottom',
           scrub: 1,
-          invalidateOnRefresh: true,
         },
       })
       gsap.to('.stamp', {
@@ -674,7 +716,7 @@ function MemoryStrip({ reducedMotion }) {
       })
     }, root)
     return () => ctx.revert()
-  }, [reducedMotion])
+  }, [animationActive, reducedMotion])
 
   return (
     <section className="memory-section" ref={root} aria-label="Momentos da viagem">
@@ -686,7 +728,16 @@ function MemoryStrip({ reducedMotion }) {
         <div className="memory-track">
           {destinations.map((item, index) => (
             <figure className="memory-card" key={item.id}>
-              <img src={item.image} alt="" loading="lazy" decoding="async" />
+              <img
+                src={item.image}
+                srcSet={`${item.image.replace('.webp', '-1080.webp')} 1080w, ${item.image} 1800w`}
+                sizes="(max-width: 719px) 82vw, 430px"
+                width="1800"
+                height="1350"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
               <figcaption><span>0{index + 1} · {item.short}</span><strong>{item.memory}</strong></figcaption>
               <div className="stamp" aria-label="Radar indica: Campos do Jordão, São Paulo">
                 <Mountain size={18} strokeWidth={1.5} aria-hidden="true" />
@@ -939,6 +990,7 @@ function WhatsAppFloat({ reducedMotion }) {
 
 function App() {
   const [loaded, setLoaded] = useState(false)
+  const [animationsReady, setAnimationsReady] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const navProgress = useRef(null)
   const reducedMotion = usePrefersReducedMotion()
@@ -984,43 +1036,52 @@ function App() {
   useEffect(() => {
     if (!loaded) return
     document.body.classList.add('ready')
-    ScrollTrigger.refresh()
-    // As fontes do Google Fonts chegam depois do primeiro paint; sem esse
-    // refresh, os pontos de início/fim dos ScrollTriggers ficam calculados
-    // com o layout "errado" (antes do reflow do web font) até o próximo resize.
-    // Só refaz o cálculo se o usuário ainda não rolou a página — do contrário
-    // o remapeamento das posições no meio de um scrub causa um salto visível.
-    document.fonts?.ready?.then(() => {
-      if (window.scrollY < 40) ScrollTrigger.refresh()
+    // Allow the hero poster to paint before creating the many below-fold
+    // ScrollTriggers. This keeps the cinematic experience and improves LCP.
+    let secondFrame
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => setAnimationsReady(true))
     })
+    return () => {
+      cancelAnimationFrame(firstFrame)
+      if (secondFrame) cancelAnimationFrame(secondFrame)
+    }
   }, [loaded])
+
+  useEffect(() => {
+    if (!animationsReady) return undefined
+    const frame = requestAnimationFrame(() => ScrollTrigger.refresh())
+    return () => cancelAnimationFrame(frame)
+  }, [animationsReady])
 
 
   return (
     <>
       {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
-      <FlightNav progressRef={navProgress} />
+      <FlightNav progressRef={navProgress} active={animationsReady} />
       <main>
-        <AirplaneIntro reducedMotion={reducedMotion} />
-        <RouteBriefing reducedMotion={reducedMotion} />
-        <DestinationStory item={destinations[0]} index={0} reducedMotion={reducedMotion} />
+        <AirplaneIntro reducedMotion={reducedMotion} active={animationsReady} />
+        <RouteBriefing reducedMotion={reducedMotion} active={animationsReady} />
+        <DestinationStory item={destinations[0]} index={0} reducedMotion={reducedMotion} active={animationsReady} />
         <StoryTransition
           number="2"
           kicker="A rota continua"
           lines={['Você começou entre as árvores.', 'Agora, olhe por cima delas.']}
           icon={Mountain}
           reducedMotion={reducedMotion}
+          active={animationsReady}
         />
-        <DestinationStory item={destinations[1]} index={1} reducedMotion={reducedMotion} />
+        <DestinationStory item={destinations[1]} index={1} reducedMotion={reducedMotion} active={animationsReady} />
         <StoryTransition
           number="3"
           kicker="Mude o ponto de vista"
           lines={['Você viu a serra lá do alto.', 'Agora, sente perto da janela.']}
           icon={TrainFront}
           reducedMotion={reducedMotion}
+          active={animationsReady}
         />
-        <DestinationStory item={destinations[2]} index={2} reducedMotion={reducedMotion} />
-        <MemoryStrip reducedMotion={reducedMotion} />
+        <DestinationStory item={destinations[2]} index={2} reducedMotion={reducedMotion} active={animationsReady} />
+        <MemoryStrip reducedMotion={reducedMotion} active={animationsReady} />
         <BoardingPass onOpen={() => setModalOpen(true)} reducedMotion={reducedMotion} />
       </main>
       <footer>
